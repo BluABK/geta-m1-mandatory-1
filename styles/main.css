@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    background-color: rgb(67, 155, 79);
+}
+
+.board {
+    /* display: block; */
+    
+    /* width: 100vw;
+    height: 100vh; */
+    border: 1px solid black;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 1fr 20px 1fr;
+    /* grid-template-areas: 'board-top-part'
+                         'spacer-area'
+                         'board-bottom-part'; */
+}
+
+.board-spacer {
+    /* background-color: darkgoldenrod; */
+    /* width: 300px; */
+    /* height: 20px; */
+    /* margin: 0; */
+}
+
+.board-top-part {
+    display: grid;
+    grid-template-columns: 170px 170px 170px 170px 170px 170px 170px;
+    grid-template-rows: 1fr;
+    grid-template-areas: 'draw-deck-container-area solution-slot-container-area';
+    /* background-color: brown; */
+}
+
+.board-bottom-part {
+    display: grid;
+    grid-template-columns: 170px 170px 170px 170px 170px 170px 170px;
+    grid-template-rows: 1fr;
+    grid-template-areas: 'draw-deck-container-area solution-slot-container-area';
+    /* background-color: cornflowerblue; */
+}
+
+.draw-deck-container {
+    grid-area: draw-deck-container-area;
+}
+
+.solution-slot-container {
+    grid-area: solution-slot-container-area;
+}
+
+.unsolved-slot-container {
+    grid-area: unsolved-slot-container-area;
+}
+
+.card-slot {
+    margin: 0;
+    width: 150px;
+    height: 200px;
+    border: 1px solid black;
+    border-radius: 10%;
+}
+
+.card-gap {
+    margin: 0;
+    width: 150px;
+    height: 200px;
+    /* border: 1px solid black; */
+    border-radius: 10%;
+}
+
+.card {
+    
+}
