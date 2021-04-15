@@ -3,6 +3,7 @@ const CARD_FAMILIES = ["heart", "diamond", "spade", "club"];
 let oddDiscardCard = null;
 let player1Deck = [];
 let player2Deck = [];
+let playerDecks = [player1Deck, player2Deck];
 const CARD_DECK = createDeck();
 // Make card deck immutable to avoid modifications, as const only protects it from re-assignment.
 Object.freeze(CARD_DECK);
@@ -41,14 +42,14 @@ function createDeck() {
     return deck;
 }
 
-function dealCards(playerDecks, card_deck) {
+function dealCards(playerDecks, cardDeck) {
     if (playerDecks.length == 0) {
         console.error("Attempted to deal cards to no players!");
         return;
     }
 
     // Copy the deck of cards into cards variable.
-    let cards = Object.assign([], card_deck);
+    let cards = Object.assign([], cardDeck);
 
     // Shuffle the deck of cards.
     if (!shuffleDeck(cards)) {
@@ -72,18 +73,15 @@ function dealCards(playerDecks, card_deck) {
 
     let cardsPerPlayer = cards.length / playerDecks.length;
 
-    for (playerDeck of playerDecks) {
+    for (let i = 0; i < playerDecks.length; i++) {
         // Empty player's old deck, if any.
-        playerDeck = [];
+        playerDecks[i] = [];
 
         // Deal player their amount of cards from the given deck.
-        for (let i = 0; i < cardsPerPlayer; i++) {
-            playerDeck.push(cards.pop());
+        for (let j = 0; j < cardsPerPlayer; j++) {
+            playerDecks[i].push(cards.pop());
         }
-        console.log("playerDeck", playerDeck);
-        console.log("Cards remaining", cards.length, cards);
     }
-
 }
 
 function getDeckHTML(playerDeck) {
@@ -131,6 +129,7 @@ function shuffleDeck(deck) {
     return true;
 }
 
-dealCards([player1Deck, player2Deck], CARD_DECK);
+dealCards(playerDecks, CARD_DECK);
+console.log("playerDecks be equal to", playerDecks);
 
 updateView();
