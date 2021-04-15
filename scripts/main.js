@@ -1,8 +1,11 @@
 // Model
 const CARD_FAMILIES = ["heart", "diamond", "spade", "club"];
-// const CARD_DECK = createDeck();
+let oddDiscardCard = null;
 let player1Deck = [];
 let player2Deck = [];
+const CARD_DECK = createDeck();
+// Make card deck immutable to avoid modifications, as const only protects it from re-assignment.
+Object.freeze(CARD_DECK);
 
 
 // View
@@ -38,7 +41,48 @@ function createDeck() {
     return deck;
 }
 
-function dealDeck(player, cards) {
+function dealCards(playerDecks, card_deck) {
+    if (playerDecks.length == 0) {
+        console.error("Attempted to deal cards to no players!");
+        return;
+    }
+
+    // Copy the deck of cards into cards variable.
+    let cards = Object.assign([], card_deck);
+
+    // Shuffle the deck of cards.
+    if (!shuffleDeck(cards)) {
+        console.error("Failed to shuffle cards, expect breakage!");
+        alert("Failed to shuffle cards, expect breakage!");
+    }
+
+    if (playerDecks.length % 2 != 0) {
+        // If there are an odd number of players
+
+        // Shuffle the deck in case it wasn't already shuffled.
+        shuffleDeck(cards);
+
+        // Discard a (now definitely) random card, by popping the first element.
+        oddDiscardCard = cards.shift();
+
+        console.info(`Discarded card due to odd number of players (${playerDecks.length})`, oddDiscardCard);
+
+        return;
+    }
+
+    let cardsPerPlayer = cards.length / playerDecks.length;
+
+    for (playerDeck of playerDecks) {
+        // Empty player's old deck, if any.
+        playerDeck = [];
+
+        // Deal player their amount of cards from the given deck.
+        for (let i = 0; i < cardsPerPlayer; i++) {
+            playerDeck.push(cards.pop());
+        }
+        console.log("playerDeck", playerDeck);
+        console.log("Cards remaining", cards.length, cards);
+    }
 
 }
 
@@ -69,10 +113,8 @@ function getDeckHTML(playerDeck) {
  */
 function shuffleDeck(deck) {
     if (deck instanceof Array == false) {
-        console.log("deck not array!", deck);
         return false;
     } else if (deck.length == 0) {
-        console.log("deck is empty array!", deck);
         return false;
     }
 
@@ -85,10 +127,10 @@ function shuffleDeck(deck) {
         // to the end of the list by swapping them with the last "unstruck" number at each iteration.
         [ deck[i], deck[j] ] = [ deck[j], deck[i] ];
     }
+
     return true;
 }
 
-// player1Deck = createDeck();
-// player2Deck = createDeck();
+dealCards([player1Deck, player2Deck], CARD_DECK);
 
 updateView();
