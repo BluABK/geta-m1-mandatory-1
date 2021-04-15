@@ -27,13 +27,42 @@ function updateView() {
 }
 
 // Controller
+function createCardDesignHTML(value, family) {
+    let symbol = "";
+
+    if (family === "heart") {
+        symbol = "♥";
+    } else if (family === "diamond") {
+        symbol = "♦";
+    } else if (family === "spade") {
+        symbol = "♠";
+    } else if (family === "club") {
+        symbol = "♣";
+    } else {
+        console.error("createCardDesignHTML got unknown card family!", family);
+        symbol = family;
+    }
+
+    let myDiv = `
+        <div class="card-design">
+            <span class="top-left">${value}<br/>${symbol}</span>
+            <span class="top-right">${value}<br/>${symbol}</span>
+            <span class="block center card-center-symbol">${symbol}</span>
+            <span class="bottom-left">${value}<br/>${symbol}</span>
+            <span class="bottom-right">${value}<br/>${symbol}</span>
+        </div>
+    `;
+
+    return myDiv;
+}
+
 function createDeck() {
     let deck = [];
     // For each card family:
     for (let fam of CARD_FAMILIES) {
         // For each card value:
         for (let i = 2; i <= 14; i++) {
-            deck.push(`<div class="card ${fam}">${i}</div>`)
+            deck.push(`<div class="card ${fam}" value="${i}">${createCardDesignHTML(i, fam)}</div>`)
         }
     }
 
