@@ -119,11 +119,11 @@ QUnit.test("dealCards - All source card decks have been dealt.", function (asser
 QUnit.test("dealCards - Dealt decks consist of cards from the source card deck.", function (assert) {
     let cardDeck = [1,2,3,4,5,6,7,8,9,10,11,12];
     let deck1 = [];
-    let deck2 = []; 
+    let deck2 = [];
     let playerDecks = [deck1, deck2];
 
     dealCards(playerDecks, cardDeck);
-    
+
     // For card in source card deck.
     for (let i = 0; i < cardDeck.length; i++) {
         let cardInDeck = false;
@@ -132,7 +132,7 @@ QUnit.test("dealCards - Dealt decks consist of cards from the source card deck."
         for (let j = 0; j < playerDecks.length; j++) {
             if (cardInDeck == false) cardInDeck = playerDecks[j].includes(cardDeck[i]);
         }
-        
+
         assert.true(cardInDeck, `Source deck card ${cardDeck[i]} has been dealt to a deck.`);
     }
     
@@ -148,7 +148,7 @@ QUnit.test("dealCards - Dealt decks consist of cards from the source card deck."
 QUnit.test("dealCards - Dealt decks have equal length when even amount.", function (assert) {
     let cardDeck = [1,2,3,4,5,6,7,8,9,10,11,12];
     let deck1 = [];
-    let deck2 = []; 
+    let deck2 = [];
     let playerDecks = [deck1, deck2];
 
     dealCards(playerDecks, cardDeck);
@@ -194,7 +194,7 @@ QUnit.test("dealCards - Dealt decks have no card in common.", function (assert) 
             // Check if card is in any of the decks
             for (let j = 0; j < playerDecks.length; j++) {
                 if (j == i) continue; // Don't check current deck against itself, as it would lead to false positive.
-                
+
                 assert.false(playerDecks[j].includes(card), `deck #${j+1} does NOT contain card ${card}.`);
             }
         }
