@@ -1,4 +1,6 @@
-// Model
+// Model:
+// As the value of Ace depends upon the card game, define it as a constant that can easily be changed later.
+const ACE_FACE_CARD_VALUE = 14;
 const CARD_FAMILIES = ["heart", "diamond", "spade", "club"];
 let oddDiscardCard = null;
 let playerDecks = [[], []];
@@ -7,7 +9,7 @@ const CARD_DECK = createDeck();
 Object.freeze(CARD_DECK);
 
 
-// View
+// View:
 function updateView() {
     document.getElementById("app").innerHTML = `
         <div class="board">
@@ -26,7 +28,7 @@ function updateView() {
     `;
 }
 
-// Controller
+// Controller:
 function createCardDesignHTML(value, family) {
     let symbol = "";
 
@@ -42,6 +44,12 @@ function createCardDesignHTML(value, family) {
         console.error("createCardDesignHTML got unknown card family!", family);
         symbol = family;
     }
+
+    // Handle face card values.
+    if (value === 11) value = 'J';
+    if (value === 12) value = 'Q';
+    if (value === 13) value = 'K';
+    if (value === ACE_FACE_CARD_VALUE) value = 'A'; // Ace is valued at 1 or 14 depending on the game.
 
     let myDiv = `
         <div class="card-design">
