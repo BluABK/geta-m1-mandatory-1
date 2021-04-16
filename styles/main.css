@@ -137,3 +137,10 @@ body {
 .card-center-symbol {
     font-size: 16ex;
 }
+
+.flip180 {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);	 /*  for IE  */
+    /* 	for browsers supporting webkit (such as chrome, firefox, safari etc.). */
+    -webkit-transform: rotate(180deg);
+}

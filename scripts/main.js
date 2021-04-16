@@ -56,8 +56,8 @@ function createCardDesignHTML(value, family) {
             <span class="top-left">${value}<br/>${symbol}</span>
             <span class="top-right">${value}<br/>${symbol}</span>
             <span class="block center card-center-symbol">${symbol}</span>
-            <span class="bottom-left">${value}<br/>${symbol}</span>
-            <span class="bottom-right">${value}<br/>${symbol}</span>
+            <span class="bottom-left flip180">${value}<br/>${symbol}</span>
+            <span class="bottom-right flip180">${value}<br/>${symbol}</span>
         </div>
     `;
 
