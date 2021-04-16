@@ -68,7 +68,7 @@ function createDeck() {
     for (let fam of CARD_FAMILIES) {
         // For each card value:
         for (let i = 2; i <= 14; i++) {
-            deck.push(`<div class="card ${fam} card-facing-front clickable" value="${i}" onClick="flipCard(this)">${createCardDesignHTML(i, fam)}</div>`)
+            deck.push(`<div class="card ${fam} card-facing-front clickable" value="${i}" onClick="clickedCard(this)">${createCardDesignHTML(i, fam)}</div>`)
         }
     }
 
@@ -95,6 +95,12 @@ function flipCard(card) {
         cardFaceFront(card);
     } else {
         console.error("BUG: This card is neither facing front on back!!", card);
+    }
+}
+
+function clickedCard(card) {
+    if (card.classList.contains("clickable")) {
+        flipCard(card);
     }
 }
 

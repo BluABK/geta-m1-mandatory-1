@@ -28,6 +28,12 @@
     /* background-color: teal; */
     background-image: url("../img/deck.webp");
     background-size: cover;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    /* Fix contrast and blurry downscaling issues in Chrome. */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
     width: 100%;
     height: 100%;
     border-radius: 10%;
@@ -61,11 +67,6 @@
     /* background-color: white; */
     border-radius: 10%;
 }
-
-::selection {
-    background-color: transparent;
-}
-
 .card-center-symbol {
     font-size: 16ex;
 }
