@@ -112,3 +112,7 @@ body {
 .hide {
     display: none;
 }
+
+.clickable {
+    cursor: pointer;
+}

@@ -52,13 +52,11 @@ function createCardDesignHTML(value, family) {
     if (value === ACE_FACE_CARD_VALUE) value = 'A'; // Ace is valued at 1 or 14 depending on the game.
 
     let myDiv = `
-    <div class="card-design-front hide">
-    <span class="top-left">${value}<br/>${symbol}</span>
-    <span class="block center card-center-symbol">${symbol}</span>
-    <span class="bottom-right flip180">${value}<br/>${symbol}</span>
+    <div class="card-design">
+        <span class="top-left">${value}<br/>${symbol}</span>
+        <span class="block center card-center-symbol">${symbol}</span>
+        <span class="bottom-right flip180">${value}<br/>${symbol}</span>
     </div>
-    <img src="../img/deck.webp" class="card-design-back">
-    </img>
     `;
 
     return myDiv;
@@ -70,11 +68,34 @@ function createDeck() {
     for (let fam of CARD_FAMILIES) {
         // For each card value:
         for (let i = 2; i <= 14; i++) {
-            deck.push(`<div class="card ${fam}" value="${i}">${createCardDesignHTML(i, fam)}</div>`)
+            deck.push(`<div class="card ${fam} card-facing-front clickable" value="${i}" onClick="flipCard(this)">${createCardDesignHTML(i, fam)}</div>`)
         }
     }
 
     return deck;
+}
+
+function cardFaceFront(card) {
+    card.classList.remove("card-facing-back");
+    card.firstElementChild.style.display = "block";
+    card.classList.add("card-facing-front");
+}
+
+function cardFaceBack(card) {
+    card.classList.remove("card-facing-front");
+    card.firstElementChild.style.display = "none";
+    card.classList.add("card-facing-back");
+}
+
+function flipCard(card) {
+    // Determine which direction card is currently facing.
+    if (card.classList.contains("card-facing-front")) {
+        cardFaceBack(card);
+    } else if (card.classList.contains("card-facing-back")) {
+        cardFaceFront(card);
+    } else {
+        console.error("BUG: This card is neither facing front on back!!", card);
+    }
 }
 
 function dealCards(playerDecks, cardDeck) {
