@@ -4,7 +4,9 @@ const ACE_FACE_CARD_VALUE = 14;
 const CARD_FAMILIES = ["heart", "diamond", "spade", "club"];
 let oddDiscardCard = null;
 let playerDecks = [[], []];
-const CARD_DECK = createDeck();
+const CARD_FACING_BACK = true;
+const CARD_FACING_FRONT = false;
+const CARD_DECK = createDeck(CARD_FACING_BACK);
 // Make card deck immutable to avoid modifications, as const only protects it from re-assignment.
 Object.freeze(CARD_DECK);
 
@@ -29,7 +31,14 @@ function updateView() {
 }
 
 // Controller:
-function createCardDesignHTML(value, family) {
+/**
+ * Create a nice card front design.
+ * @param {*} value The actual value (number) of the card.
+ * @param {*} family Card family.
+ * @param {*} hide Whether or not to display the design.
+ * @returns 
+ */
+function createCardFrontDesignHTML(value, family, hide = true) {
     let symbol = "";
 
     if (family === "heart") {
@@ -52,7 +61,7 @@ function createCardDesignHTML(value, family) {
     if (value === ACE_FACE_CARD_VALUE) value = 'A'; // Ace is valued at 1 or 14 depending on the game.
 
     let myDiv = `
-    <div class="card-design">
+    <div class="card-design" style="${hide ? "display: none;" : "" }">
         <span class="top-left">${value}<br/>${symbol}</span>
         <span class="block center card-center-symbol">${symbol}</span>
         <span class="bottom-right flip180">${value}<br/>${symbol}</span>
@@ -62,13 +71,19 @@ function createCardDesignHTML(value, family) {
     return myDiv;
 }
 
-function createDeck() {
+/**
+ * Create a deck of cards.
+ * @param {*} facingBack Card faces down.
+ * @returns 
+ */
+function createDeck(facingBack = false) {
     let deck = [];
     // For each card family:
     for (let fam of CARD_FAMILIES) {
         // For each card value:
         for (let i = 2; i <= 14; i++) {
-            deck.push(`<div class="card ${fam} card-facing-front clickable" value="${i}" onClick="clickedCard(this)">${createCardDesignHTML(i, fam)}</div>`)
+            let cardDesign = createCardFrontDesignHTML(i, fam, facingBack);
+            deck.push(`<div class="card ${fam} card-facing-${facingBack ? "back" : "front"} clickable" value="${i}" onClick="clickedCard(this)">${cardDesign}</div>`)
         }
     }
 
@@ -191,6 +206,5 @@ function shuffleDeck(deck) {
 }
 
 dealCards(playerDecks, CARD_DECK);
-console.log("playerDecks be equal to", playerDecks);
 
 updateView();
