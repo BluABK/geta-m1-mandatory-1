@@ -67,17 +67,17 @@ QUnit.test("shuffleDeck - Returned value is random", function (assert) {
     assert.equal(succeeded, true, "Assert that shuffle succeeded.");
 });
 
-QUnit.test("dealCards - Discards a card when odd amount of players.", function (assert) {
+QUnit.test(`dealCards - Discards and marks a card as "dead", when odd amount of players with even amount of source deck cards.`, function (assert) {
     let cardDeck = [1,2,3,4,5,6,7,8,9,10,11,12];
     let playerDecks = [[], [], []];
 
     dealCards(playerDecks, cardDeck);
 
-    assert.notStrictEqual(oddDiscardCard, null, "Discarded card is not null.");
-    assert.true(cardDeck.includes(oddDiscardCard), "Discarded card is one of the ones from the given deck.");
+    assert.notStrictEqual(deadCard, null, "Dead card is not null.");
+    assert.true(cardDeck.includes(deadCard), "Dead card is one of the ones from the given deck.");
     
     for (let i = 0; i < playerDecks.length; i++) {
-        assert.false(playerDecks[i].includes(oddDiscardCard), `Discarded card is not in player deck #${i}`);
+        assert.false(playerDecks[i].includes(deadCard), `Dead card is not in player deck #${i}`);
     }
 });
 

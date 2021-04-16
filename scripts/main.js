@@ -2,8 +2,12 @@
 // As the value of Ace depends upon the card game, define it as a constant that can easily be changed later.
 const ACE_FACE_CARD_VALUE = 14;
 const CARD_FAMILIES = ["heart", "diamond", "spade", "club"];
-let oddDiscardCard = null;
+// Card that cannot be used in play (usually happens with odd amount of players with an even amount of source deck cards).
+let deadCard = null;
+// Cards players draw from.
 let playerDecks = [[], []];
+// Cards players have played.
+let playerPiles = [[], []];
 const CARD_FACING_BACK = true;
 const CARD_FACING_FRONT = false;
 const CARD_DECK = createDeck(CARD_FACING_BACK);
@@ -17,13 +21,13 @@ function updateView() {
         <div class="board">
             <div class="board-top-part">
                 <div id="player1-deck" class="card-slot">
-                    ${getDeckHTML(playerDecks[0])}
+                    ${playerDecks[0][0]}
                 </div>
                 <div id="player1-display" class="card-slot"></div>
                 <div class="card-gap"></div>
                 <div id="player2-display" class="card-slot"></div>
                 <div id="player2-deck" class="card-slot">
-                    ${getDeckHTML(playerDecks[1])}
+                    ${playerDecks[1][0]}
                 </div>
             </div>
         </div>
@@ -141,9 +145,9 @@ function dealCards(playerDecks, cardDeck) {
         shuffleDeck(cards);
 
         // Discard a (now definitely) random card, by popping the first element.
-        oddDiscardCard = cards.shift();
+        deadCard = cards.shift();
 
-        console.info(`Discarded card due to odd number of players (${playerDecks.length})`, oddDiscardCard);
+        console.info(`Discarded card due to odd number of players (${playerDecks.length})`, deadCard);
 
         return;
     }
