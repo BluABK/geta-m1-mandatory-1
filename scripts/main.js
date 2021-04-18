@@ -163,17 +163,17 @@ function updateView() {
         <div class="board">
             <div class="board-top-part">
                 <div id="player1-deck" class="card-slot card-deck" playersIndex="0">
-                    ${playerDecks[0][0] ? getCardHTML(playerDecks[0][0], CARD_FACING_BACK) : ""}
+                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1], CARD_FACING_BACK) : ""}
                 </div>
                 <div id="player1-pile" class="card-slot card-pile" playersIndex="0">
-                    ${playerPiles[0][0] ? playerPiles[0][0] : ""}
+                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[0], CARD_FACING_BACK) : ""}
                 </div>
                 <div class="card-gap"></div>
                 <div id="player2-pile" class="card-slot card-pile" playersIndex="1">
-                    ${playerPiles[1][0] ? playerPiles[1][0] : ""}
+                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[0], CARD_FACING_BACK) : ""}
                 </div>
                 <div id="player2-deck" class="card-slot card-deck" playersIndex="1">
-                    ${playerDecks[1][0] ? playerDecks[1][0] : ""}
+                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1], CARD_FACING_BACK) : ""}
                 </div>
             </div>
         </div>
@@ -303,7 +303,7 @@ function clickedCard(card) {
     if (card.classList.contains("clickable")) {
         let ownerIndex = getCardOwnerIndex(card);
 
-        moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
+        // moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
         flipCard(card);
     }
 }
@@ -322,10 +322,6 @@ function dealCards(playerDecks, cardsObject) {
 
     if (playerDecks.length % 2 != 0) {
         // If there are an odd number of players
-
-        // // Shuffle the deck in case it wasn't already shuffled.
-        // shuffleDeck(cardsObject);
-
         // Discard a (now definitely) random card, by popping the first element.
         deadCard = cardsObject.shift();
 
