@@ -73,23 +73,38 @@ class Cards {
     }
 
     /**
-     * Pass .include to items array.
-     * @param {any} searchElement
-     * @param {number} fromIndex
-     * @returns boolean
+     * Pass .includes to items Array.
+     *
+     * Determines whether an array includes a certain element, returning true or false as appropriate.
+     * @param {any} searchElement The element to search for.
+     * @param {number} fromIndex The position in this array at which to begin searching for searchElement.
+     * @returns boolean Returns true or false whether an array includes a certain element.
      */
     includes(searchElement, fromIndex = undefined) {
         return this.items.includes(searchElement, fromIndex);
     }
 
+    /**
+     * Pass .indexOf to items Array.
+     *
+     * Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+     * @param {any} searchElement The value to locate in the array.
+     * @param {number} fromIndex The array index at which to begin the search.
+     *                 If fromIndex is omitted, the search starts at index 0.
+     * @returns {number} number Index of value in array or -1 if it is not present.
+     */
+    indexOf(any, fromIndex = undefined) {
+        return this.items.indexOf(any, fromIndex);
+    }
+
     shift() {
         // Pop item from the start of items array.
-        let poppedItem = this.items.shift();
+        let shiftedItem = this.items.shift();
 
-        // Delete popped item from the items map.
-        this.itemsMap.delete(poppedItem.id);
+        // Delete shifted item from the items map.
+        this.itemsMap.delete(shiftedItem.id);
 
-        return poppedItem;
+        return shiftedItem;
     }
 
     push(card) {
@@ -103,10 +118,81 @@ class Cards {
     pop() {
         // Pop item from the end of items array.
         let poppedItem = this.items.pop();
+
         // Delete popped item from the items map.
         this.itemsMap.delete(poppedItem.id);
 
         return poppedItem;
+    }
+
+    /**
+     * Pass .splice to items Array and update items map.
+     *
+     * Removes elements from an array and, if necessary, inserts new elements in their place,
+     * returning the deleted elements.
+     * @param {number} start The zero-based location in the array from which to start removing elements.
+     * @param {number} deleteCount The number of elements to remove.
+     * @returns {Array} An array containing the elements that were deleted.
+     */
+    splice(start, deleteCount = undefined) {
+        // Splice deleteCount amount of item from start index.
+        let splicedItems = this.items.splice(start, deleteCount);
+
+        // Delete spliced items from the items map.
+        for (let splicedItem of splicedItems) {
+            this.itemsMap.delete(splicedItem.id);
+        }
+
+        return splicedItems;
+    }
+
+    /**
+     * Find the items index of an item given its UUID.
+     * @param {*} uuid UUID property of item to find.
+     * @returns Index of mathced item in items Array or null.
+     */
+    getItemsIndexByUUID(uuid) {
+        let matchedItem = null;
+
+        this.items.findIndex(function (item) {
+            if (item.id === uuid) {
+                matchedItem = item;
+            }
+        });
+
+        return this.items.indexOf(matchedItem);
+    }
+
+    /**
+     * Find an item in items Array given its UUID.
+     * @param {*} uuid UUID property of item to find.
+     * @returns Mathced item in items Array or null.
+     */
+    getItemByUUID(uuid) {
+        let matchedItem = null;
+
+        this.items.findIndex(function (item) {
+            if (item.id === uuid) {
+                matchedItem = item;
+            }
+        });
+
+        return matchedItem;
+    }
+
+    /**
+     * Check if an item is in items Array given its UUID.
+     * @param {*} uuid UUID property of item to find.
+     * @returns {boolean} Status of whether item was found in items Array.
+     */
+    itemsHasItemByUUID(uuid) {
+        let matchedItem = false;
+
+        this.items.findIndex(function (item) {
+            matchedItem = item.id === uuid;
+        });
+
+        return matchedItem;
     }
 
     /**
@@ -121,7 +207,7 @@ class Cards {
      * simplified (it can always start at 0), and thereby skipping the final element.
      *
      * https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
-     * @returns Success status (boolean).
+     * @returns {boolean} Success status.
      */
     shuffle() {
         if (this.items instanceof Array == false) {
@@ -202,7 +288,7 @@ function createCardFrontDesignHTML(value, suit, hide = true) {
         symbol = "♣";
     } else {
         console.error("createCardDesignHTML got unknown card suit!", suit);
-        symbol = suit;
+        symbol = '🤦‍♂️';
     }
 
     // Handle face card values.
@@ -277,23 +363,31 @@ function flipCard(card) {
 /**
  * Moves a card from one pile to another.
  * @param {HTMLElement} card Card.
- * @param {Array} src Source pile.
- * @param {Array} dst Destination pile.
+ * @param {Cards} src Source pile.
+ * @param {Cards} dst Destination pile.
  */
 function moveCard(card, source, destination) {
+    // Get Card's UUID.
+    let cardUUID = card.getAttribute("cardID");
+    console.log(cardUUID)
     // Get card's position in source array.
-    let cardSourceIndex = source.indexOf(card);
+    let cardSourceIndex = source.getItemsIndexByUUID(cardUUID);
     console.log(cardSourceIndex)
 
-    if (cardSourceIndex == -1) {
+    if (source.itemsMap.has(cardUUID) == false) {
         console.error("Attempted to move a card from a source it isn't in.", card, source);
         return;
     }
 
     // Remove card from its source array.
-    let removedCard = source.splice(cardSourceIndex, 1);
+    let removedCard = source.splice(cardSourceIndex, 1)[0];
+    console.log("Removed card", removedCard);
+
     // Append card to the destination array.
     destination.push(card);
+
+    // Update view.
+    updateView();
 
     return removedCard;
 }
@@ -301,9 +395,9 @@ function moveCard(card, source, destination) {
 function clickedCard(card) {
     console.log("clickedCard(card)", card);
     if (card.classList.contains("clickable")) {
-        let ownerIndex = getCardOwnerIndex(card);
+        let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner.
 
-        // moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
+        moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
         flipCard(card);
     }
 }
@@ -317,7 +411,7 @@ function dealCards(playerDecks, cardsObject) {
     // Shuffle the deck of cards.
     if (!cardsObject.shuffle()) {
         console.error("Failed to shuffle cards, expect breakage!");
-        alert("Failed to shuffle cards, expect breakage!");
+        // alert("Failed to shuffle cards, expect breakage!");
     }
 
     if (playerDecks.length % 2 != 0) {
