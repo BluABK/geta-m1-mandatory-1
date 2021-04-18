@@ -129,3 +129,7 @@ body {
 ::selection {
     background-color: transparent;
 }
+
+.board-stats-part {
+    padding: 15px 0px 0px 5px;
+}

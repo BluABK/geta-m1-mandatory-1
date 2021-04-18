@@ -1,4 +1,5 @@
 // Model:
+const CARD_FACING_BACK = true;
 // As the value of Ace depends upon the card game, define it as a constant that can easily be changed later.
 const ACE_FACE_CARD_VALUE = 14;
 const SUITS = ["heart", "diamond", "spade", "club"];
@@ -18,10 +19,11 @@ function uuidv4() {
 
 // Classes.
 class Card {
-    constructor(value, suit, owner = null) {
+    constructor(value, suit, facingBack = true, owner = null) {
         this.id = uuidv4();
         this.value = value;
         this.suit = suit;
+        this.facingBack = facingBack;
         this.ownerId = owner;
     }
 
@@ -31,6 +33,26 @@ class Card {
 
     get owner() {
         return this.owner;
+    }
+
+    get isFacingBack() {
+        return this.faceBack;
+    }
+
+    get isFacing() {
+        return this.faceBack ? "back" : "front";
+    }
+
+    flip() {
+        this.facingBack ? this.facingBack = false : this.facingBack = true;
+    }
+
+    faceBack() {
+        this.facingBack = true;
+    }
+
+    faceFront() {
+        this.facingBack = false;
     }
 }
 
@@ -237,8 +259,6 @@ let playerDecks = [new Cards(), new Cards()];
 // Cards players have played.
 let playerPiles = [new Cards(), new Cards()];
 
-const CARD_FACING_BACK = true;
-
 // View:
 function updateView() {
     /**
@@ -249,24 +269,50 @@ function updateView() {
         <div class="board">
             <div class="board-top-part">
                 <div id="player1-deck" class="card-slot card-deck" playersIndex="0">
-                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1], CARD_FACING_BACK) : ""}
+                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1]) : ""}
                 </div>
                 <div id="player1-pile" class="card-slot card-pile" playersIndex="0">
-                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[0], CARD_FACING_BACK) : ""}
+                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[playerPiles[0].length - 1], false) : ""}
                 </div>
                 <div class="card-gap"></div>
                 <div id="player2-pile" class="card-slot card-pile" playersIndex="1">
-                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[0], CARD_FACING_BACK) : ""}
+                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[playerPiles[1].length - 1], false) : ""}
                 </div>
                 <div id="player2-deck" class="card-slot card-deck" playersIndex="1">
-                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1], CARD_FACING_BACK) : ""}
+                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1]) : ""}
                 </div>
+            </div>
+            <div class="board-stats-part">
+                ${allPlayersStatsHTML(playerDecks, playerPiles)}
             </div>
         </div>
     `;
 }
 
 // Controller:
+function playerDeckStatsHTML(deck) {
+    return deck.length;
+}
+
+function playerPileStatsHTML(pile) {
+    return pile.length;
+}
+
+function allPlayersStatsHTML(decks, piles) {
+    if (decks.length !== piles.length) {
+        console.error("Player count for decks and piles are not proportional!", decks, piles);
+        return;
+    }
+
+    let myDiv = "";
+
+    for (let i = 0; i < decks.length; i++) {
+        if (i !== 0) myDiv += "<br/>";
+        myDiv += `Player ${i+1}: Deck: ${playerDeckStatsHTML(decks[i])}, Pile: ${playerPileStatsHTML(piles[i])}.`;
+    }
+
+    return myDiv;
+}
 
 /**
  * Create a nice card front design.
@@ -308,9 +354,9 @@ function createCardFrontDesignHTML(value, suit, hide = true) {
     return myDiv;
 }
 
-function getCardHTML(cardObject, facingBack = false) {
-    let cardDesign = createCardFrontDesignHTML(cardObject.value, cardObject.suit, facingBack);
-    let cardHTML = `<div class="card ${cardObject.suit} card-facing-${facingBack ? "back" : "front"} clickable" value="${cardObject.value}" onClick="clickedCard(this)" cardId="${cardObject.id}">${cardDesign}</div>`
+function getCardHTML(cardObject, clickable = true) {
+    let cardDesign = createCardFrontDesignHTML(cardObject.value, cardObject.suit, cardObject.facingBack);
+    let cardHTML = `<div class="card ${cardObject.suit} card-facing-${cardObject.facingBack ? "back" : "front"} ${clickable ? "clickable" : ""}" value="${cardObject.value}" onClick="clickedCard(this)" cardId="${cardObject.id}">${cardDesign}</div>`
 
     return cardHTML;
 }
@@ -320,13 +366,13 @@ function getCardHTML(cardObject, facingBack = false) {
  * @param {*} facingBack Card faces down.
  * @returns Array of initialised Card objects.
  */
-function createDeck() {
+function createDeck(facingBack = CARD_FACING_BACK, owner = null) {
     let deck = new Cards();
     // For each card suit:
     for (let suit of SUITS) {
         // For each card value:
         for (let i = 2; i <= 14; i++) {
-            deck.push(new Card(i, suit))
+            deck.push(new Card(i, suit, facingBack, owner));
         }
     }
 
@@ -349,7 +395,12 @@ function cardFaceBack(card) {
     card.classList.add("card-facing-back");
 }
 
-function flipCard(card) {
+/**
+ * Flips a HTMLElement Card.
+ * @param {HTMLElement} card HTMLElement Card.
+ */
+function flipHTMLCard(card) {
+    console.log("flipCard", card);
     // Determine which direction card is currently facing.
     if (card.classList.contains("card-facing-front")) {
         cardFaceBack(card);
@@ -384,7 +435,7 @@ function moveCard(card, source, destination) {
     console.log("Removed card", removedCard);
 
     // Append card to the destination array.
-    destination.push(card);
+    destination.push(removedCard);
 
     // Update view.
     updateView();
@@ -397,8 +448,14 @@ function clickedCard(card) {
     if (card.classList.contains("clickable")) {
         let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner.
 
-        moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
-        flipCard(card);
+        // Move card from deck to pile, and store the returned object in a variable for later use.
+        let movedCard = moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
+
+        // Flip card object (from back to front).
+        movedCard.flip();
+
+        // Update view.
+        updateView();
     }
 }
 
@@ -432,7 +489,9 @@ function dealCards(playerDecks, cardsObject) {
 
         // Deal player their amount of cards from the given deck.
         for (let j = 0; j < cardsPerPlayer; j++) {
-            playerDecks[i].push(cardsObject.pop());
+            let poppedCard = cardsObject.pop();
+            poppedCard.owner = i;
+            playerDecks[i].push(poppedCard);
         }
     }
 }
