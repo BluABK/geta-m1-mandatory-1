@@ -268,18 +268,18 @@ function updateView() {
     document.getElementById("app").innerHTML = `
         <div class="board">
             <div class="board-top-part">
-                <div id="player1-deck" class="card-slot card-deck" playersIndex="0">
-                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1]) : ""}
+                <div id="player1-deck" class="card-deck" playersIndex="0">
+                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1]) : `<div class="empty-card-slot"></div>`}
                 </div>
-                <div id="player1-pile" class="card-slot card-pile" playersIndex="0">
-                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[playerPiles[0].length - 1], false) : ""}
+                <div id="player1-pile" class="card-pile" playersIndex="0">
+                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[playerPiles[0].length - 1], false) : `<div class="empty-card-slot"></div>`}
                 </div>
                 <div class="card-gap"></div>
-                <div id="player2-pile" class="card-slot card-pile" playersIndex="1">
-                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[playerPiles[1].length - 1], false) : ""}
+                <div id="player2-pile" class="card-pile" playersIndex="1">
+                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[playerPiles[1].length - 1], false) : `<div class="empty-card-slot"></div>`}
                 </div>
-                <div id="player2-deck" class="card-slot card-deck" playersIndex="1">
-                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1]) : ""}
+                <div id="player2-deck" class="card-deck" playersIndex="1">
+                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1]) : `<div class="empty-card-slot"></div>`}
                 </div>
             </div>
             <div class="board-stats-part">
