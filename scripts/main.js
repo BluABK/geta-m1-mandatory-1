@@ -258,6 +258,10 @@ class Cards {
 let playerDecks = [new Cards(), new Cards()];
 // Cards players have played.
 let playerPiles = [new Cards(), new Cards()];
+// Code readability helper variables.
+const PLAYER1_INDEX = 0;
+const PLAYER2_INDEX = 1;
+let CPU_PLAYER = 1;
 
 // View:
 function updateView() {
@@ -356,7 +360,7 @@ function createCardFrontDesignHTML(value, suit, hide = true) {
 
 function getCardHTML(cardObject, clickable = true) {
     let cardDesign = createCardFrontDesignHTML(cardObject.value, cardObject.suit, cardObject.facingBack);
-    let cardHTML = `<div class="card ${cardObject.suit} card-facing-${cardObject.facingBack ? "back" : "front"} ${clickable ? "clickable" : ""}" value="${cardObject.value}" onClick="clickedCard(this)" cardId="${cardObject.id}">${cardDesign}</div>`
+    let cardHTML = `<div id="${cardObject.id}" class="card ${cardObject.suit} card-facing-${cardObject.facingBack ? "back" : "front"} ${clickable ? "clickable" : ""}" value="${cardObject.value}" onClick="clickedCard(this)" cardId="${cardObject.id}">${cardDesign}</div>`
 
     return cardHTML;
 }
@@ -443,19 +447,53 @@ function moveCard(card, source, destination) {
     return removedCard;
 }
 
-function clickedCard(card) {
-    console.log("clickedCard(card)", card);
-    if (card.classList.contains("clickable")) {
-        let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner.
+function playCard(playersIndex, card) {
+    // Move card from deck to pile, and store the returned object in a variable for later use.
+    let movedCard = moveCard(card, playerDecks[playersIndex], playerPiles[playersIndex]);
 
-        // Move card from deck to pile, and store the returned object in a variable for later use.
-        let movedCard = moveCard(card, playerDecks[ownerIndex], playerPiles[ownerIndex]);
+    // Flip card object (from back to front).
+    movedCard.flip();
 
-        // Flip card object (from back to front).
-        movedCard.flip();
+    // Update view.
+    updateView();
+
+    return movedCard;
+}
+
+/**
+ * Retrieve a given Player card from Cards stack, from View/document.
+ * @param {number} playerIndex Player to retrieve card from.
+ * @param {Cards} stack Which stack to retrieve card from.
+ * @param {number} stackIndex Which card within the stack to retrieve.
+ * @returns {HTMLElement} Retrieved card HTML or null.
+ */
+function getPlayer2ViewCardHTML(playerIndex, stack, stackIndex) {
+    // let cardHTML = null;
+    // cardHTML = document.getElementById()
+    console.error("Not implemented!");
+}
+
+function playRoundAgainstCPU(player1CardHTML, player2CardHTML) {
+        // Player 1: Play the clicked card.
+        let playedCardP1 = playCard(PLAYER1_INDEX, player1CardHTML);
+
+        // Player 2 (CPU): Play card from top of deck/stack.
+        let player2Deck = playerDecks[PLAYER2_INDEX];
+        let player2Card = player2Deck.items[player2Deck.length - 1];
+        let cardHTMLElementInView = document.getElementById(player2Card.id);
+        let playedCardP2 = playCard(PLAYER2_INDEX, cardHTMLElementInView);
 
         // Update view.
         updateView();
+}
+
+function clickedCard(cardHTML) {
+    console.log("clickedCard(card)", cardHTML);
+    if (cardHTML.classList.contains("clickable")) {
+        // let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner. // FIXME: For use with 2 human players, currently only computer is implemented.
+
+        // Play a single round.
+        playRoundAgainstCPU(cardHTML);
     }
 }
 
@@ -508,3 +546,9 @@ function getDeckHTML(playerDeck) {
 dealCards(playerDecks, createDeck());
 
 updateView();
+
+/**
+ * General TODO and FIXME section:
+ * 
+ * FIXME: Player 2 cards should not be clickable when played by CPU.
+ */
