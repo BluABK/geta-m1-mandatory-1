@@ -24,15 +24,14 @@ class Card {
         this.value = value;
         this.suit = suit;
         this.facingBack = facingBack;
-        this.ownerId = owner;
+        this.owner = owner;
     }
 
-    set owner(playerId) {
-        this.ownerId = playerId;
-    }
-
-    get owner() {
-        return this.owner;
+    /**
+     * @param {number} playerId
+     */
+    set setOwner(playerId) {
+        this.owner = playerId;
     }
 
     get isFacingBack() {
@@ -148,22 +147,48 @@ class Cards {
     }
 
     /**
+     * Iterates items Array and adds any missing mappings.
+     */
+    updateMap() {
+        if (this.items) {
+            for (let item of this.items) {
+                if (item) {
+                    if (this.itemsMap.has(item.id) == false) {
+                        console.log("Item map missing, mapping item from this.items", item);
+                        this.itemsMap.set(item.id, item);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Pass .splice to items Array and update items map.
      *
      * Removes elements from an array and, if necessary, inserts new elements in their place,
      * returning the deleted elements.
      * @param {number} start The zero-based location in the array from which to start removing elements.
      * @param {number} deleteCount The number of elements to remove.
+     * @param  {any} items Elements to insert into the array in place of the deleted elements.
      * @returns {Array} An array containing the elements that were deleted.
      */
-    splice(start, deleteCount = undefined) {
-        // Splice deleteCount amount of item from start index.
-        let splicedItems = this.items.splice(start, deleteCount);
+    splice(start, deleteCount = undefined, items = undefined) {
+        let splicedItems;
+        if (items) {
+            splicedItems = this.items.splice(start, deleteCount, items);
+        } else {
+            splicedItems = this.items.splice(start, deleteCount);
+        }
+        console.log("items", items);
+        console.log("splicedItems", splicedItems);
 
         // Delete spliced items from the items map.
         for (let splicedItem of splicedItems) {
             this.itemsMap.delete(splicedItem.id);
         }
+
+        // Map any new inserted entries.
+        this.updateMap();
 
         return splicedItems;
     }
@@ -254,14 +279,23 @@ class Cards {
     }
 }
 
+let lastBattleVictor = null;
+let lastBattle = {
+    "p1Card": null,
+    "p2Card": null,
+    "victor": NaN
+}
 // Cards players draw from.
 let playerDecks = [new Cards(), new Cards()];
 // Cards players have played.
 let playerPiles = [new Cards(), new Cards()];
+// War cards players have played.
+let playWarPiles = [new Cards(), new Cards()];
 // Code readability helper variables.
 const PLAYER1_INDEX = 0;
 const PLAYER2_INDEX = 1;
-let CPU_PLAYER = 1;
+let cpuPlayer = 1;
+const indent = "&nbsp;&nbsp;&nbsp;&nbsp;"
 
 // View:
 function updateView() {
@@ -269,25 +303,67 @@ function updateView() {
      * Notes:
      * Each player deck and discard pile only displays the last card from their respective stack.
      */
+    let lastBattleInfo = "";
+    let lastVictorString = lastBattle["victor"] >= 0 ? `Player ${lastBattle["victor"] +1}` : "Draw! (FIXME: WAR)"
+
+    if (lastBattle["p1Card"] && lastBattle["p1Card"]) {
+        // ${getCardHTML(lastBattle["p1Card"])} VS ${getCardHTML(lastBattle["p2Card"])}
+        lastBattleInfo = `
+            ${indent}Victor: Player ${lastBattle["victor"] +1 }
+        `;
+    }
+
     document.getElementById("app").innerHTML = `
         <div class="board">
-            <div class="board-top-part">
-                <div id="player1-deck" class="card-deck" playersIndex="0">
-                    ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1]) : `<div class="empty-card-slot"></div>`}
-                </div>
-                <div id="player1-pile" class="card-pile" playersIndex="0">
-                    ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[playerPiles[0].length - 1], false) : `<div class="empty-card-slot"></div>`}
-                </div>
-                <div class="card-gap"></div>
-                <div id="player2-pile" class="card-pile" playersIndex="1">
-                    ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[playerPiles[1].length - 1], false) : `<div class="empty-card-slot"></div>`}
-                </div>
-                <div id="player2-deck" class="card-deck" playersIndex="1">
-                    ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1]) : `<div class="empty-card-slot"></div>`}
-                </div>
-            </div>
-            <div class="board-stats-part">
+            <div id="board-stats" class="board-stats-part">
                 ${allPlayersStatsHTML(playerDecks, playerPiles)}
+                <br/>
+                Last Battle Outcome:
+                <br/>
+                ${lastBattleInfo ? lastBattleInfo : `${indent}No battle have yet taken place.`}
+            </div>
+            <div id="player1-deck" class="card-slot deck-slot" playersIndex="0">
+                ${playerDecks[0].length > 0 ? getCardHTML(playerDecks[0].items[playerDecks[0].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player1-pile" class="card-slot pile-slot card-pile" playersIndex="0">
+                ${playerPiles[0].length > 0  ? getCardHTML(playerPiles[0].items[playerPiles[0].length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-gap"></div>
+            <div class="card-spacer"></div>
+            <div class="card-gap-half"></div>
+            <div class="card-spacer"></div>
+            <div class="card-gap"></div>
+            <div id="player2-pile" class="card-slot card-pile" playersIndex="1">
+                ${playerPiles[1].length > 0  ? getCardHTML(playerPiles[1].items[playerPiles[1].length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player2-deck" class="card-slot" playersIndex="1">
+                ${playerDecks[1].length > 0  ? getCardHTML(playerDecks[1].items[playerDecks[1].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="newline"></div>
+            <div id="player1-war-slot1" class="card-slot" playersIndex="0">
+                ${playWarPiles[0].length > 0 ? getCardHTML(playWarPiles[0].items[playWarPiles[0].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player1-war-slot2" class="card-slot" playersIndex="0">
+                ${playWarPiles[0].length > 0 ? getCardHTML(playWarPiles[0].items[playWarPiles[0].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player1-war-slot3" class="card-slot" playersIndex="0">
+                ${playWarPiles[0].length > 0 ? getCardHTML(playWarPiles[0].items[playWarPiles[0].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-gap-half"></div>
+            <div id="player1-war-slot1" class="card-slot" playersIndex="0">
+            ${playWarPiles[1].length > 0 ? getCardHTML(playWarPiles[1].items[playWarPiles[1].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player1-war-slot2" class="card-slot" playersIndex="0">
+                ${playWarPiles[1].length > 0 ? getCardHTML(playWarPiles[1].items[playWarPiles[1].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            </div>
+            <div class="card-spacer"></div>
+            <div id="player1-war-slot3" class="card-slot" playersIndex="0">
+                ${playWarPiles[1].length > 0 ? getCardHTML(playWarPiles[1].items[playWarPiles[1].length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
         </div>
     `;
@@ -421,7 +497,7 @@ function flipHTMLCard(card) {
  * @param {Cards} src Source pile.
  * @param {Cards} dst Destination pile.
  */
-function moveCard(card, source, destination) {
+function moveCard(card, source, destination, destinationIndex = 0) {
     // Get Card's UUID.
     let cardUUID = card.getAttribute("cardID");
     console.log(cardUUID)
@@ -438,11 +514,9 @@ function moveCard(card, source, destination) {
     let removedCard = source.splice(cardSourceIndex, 1)[0];
     console.log("Removed card", removedCard);
 
-    // Append card to the destination array.
-    destination.push(removedCard);
-
-    // Update view.
-    updateView();
+    // Insert card into the destination array at index.
+    // destination.push(removedCard);
+    destination.splice(destinationIndex, 0, removedCard);
 
     return removedCard;
 }
@@ -453,6 +527,7 @@ function playCard(playersIndex, card) {
 
     // Flip card object (from back to front).
     movedCard.flip();
+    console.log("movedCard", movedCard);
 
     // Update view.
     updateView();
@@ -473,9 +548,33 @@ function getPlayer2ViewCardHTML(playerIndex, stack, stackIndex) {
     console.error("Not implemented!");
 }
 
-function playRoundAgainstCPU(player1CardHTML, player2CardHTML) {
+/**
+ * Determine the winning Card in a battle (suits are ignored).
+ * @param {Card} card1 Card.
+ * @param {Card} card2 Card.
+ * @returns Victorious Card or Array[Card, Card] if draw.
+ */
+function determineBattleVictor(card1, card2) {
+    let victorCards = null;
+
+    if (card1.value === card2.value) {
+        victorCards = [card1, card2];
+    } else {
+        card1.value > card2.value? victorCards = card1: victorCards = card2;
+    }
+
+    console.log(`determineBattleVictor ${card1.value} VS ${card2.value}`, victorCards);
+
+    return victorCards;
+}
+
+function battleCPU(player1CardHTML) {
+    console.log("sadsadsdasa", player1CardHTML);
         // Player 1: Play the clicked card.
+        // let playedCardP1 = playerDecks[PLAYER1_INDEX].itemsMap.get(player1CardHTML.getAttribute("cardID"));
+        // console.log("playedCardP1", playedCardP1);
         let playedCardP1 = playCard(PLAYER1_INDEX, player1CardHTML);
+        console.log("playedCardP1 2nd", playedCardP1);
 
         // Player 2 (CPU): Play card from top of deck/stack.
         let player2Deck = playerDecks[PLAYER2_INDEX];
@@ -483,8 +582,26 @@ function playRoundAgainstCPU(player1CardHTML, player2CardHTML) {
         let cardHTMLElementInView = document.getElementById(player2Card.id);
         let playedCardP2 = playCard(PLAYER2_INDEX, cardHTMLElementInView);
 
-        // Update view.
-        updateView();
+        // Battle!
+        let battleVictorCard = determineBattleVictor(playedCardP1, playedCardP2);
+        if (battleVictorCard instanceof Array)  {
+            // Draw: It is WAR!
+            // FIXME: Implement WAR!
+        } else {
+            let battleVictor = battleVictorCard.owner;
+            console.log("battleVictor", battleVictor);
+            lastBattleVictor = battleVictor;
+            lastBattle["p1Card"] = playedCardP1;
+            lastBattle["p2Card"] = playedCardP1;
+            lastBattle["victor"] = battleVictor;
+
+            // Update view before moving cards to have the outcome still shown on screen.
+            updateView();
+            
+            // Insert all played cards to the bottom of battle victor's stack (and make it face backwards again).
+            moveCard(document.getElementById(playedCardP1.id), playerPiles[PLAYER1_INDEX], playerDecks[battleVictor], 0).faceBack();
+            moveCard(document.getElementById(playedCardP2.id), playerPiles[PLAYER2_INDEX], playerDecks[battleVictor], 0).faceBack();
+        }
 }
 
 function clickedCard(cardHTML) {
@@ -493,7 +610,7 @@ function clickedCard(cardHTML) {
         // let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner. // FIXME: For use with 2 human players, currently only computer is implemented.
 
         // Play a single round.
-        playRoundAgainstCPU(cardHTML);
+        battleCPU(cardHTML);
     }
 }
 
@@ -549,6 +666,6 @@ updateView();
 
 /**
  * General TODO and FIXME section:
- * 
+ *
  * FIXME: Player 2 cards should not be clickable when played by CPU.
  */

@@ -3,42 +3,72 @@ body {
     background-color: rgb(67, 155, 79);
 }
 
-.board {
-    /* display: block; */
-    
-    /* width: 100vw;
-    height: 100vh; */
+.newline {
+    clear: left;
+}
+
+.deck-slot {
+    float: left;
+    width: 150px;
+    height: 200px;
+}
+
+.pile-slot {
+    float: left;
+    width: 150px;
+    height: 200px;
+}
+
+.card-gap {
+    float: left;
+    width: 150px;
+    max-width: 150px;
+    height: 200px;
+    max-height: 200px;
+}
+
+.card-gap-half {
+    float: left;
+    width: 75px;
+    max-width: 75px;
+    height: 200px;
+    max-height: 200px;
+}
+
+.card-spacer {
+    float: left;
+    width: 20px;
+    max-width: 20px;
+    height: 200px;
+    max-height: 200px;
+}
+
+.card-slot {
+    float: left;
+    width: 150px;
+    max-width: 150px;
+    height: 200px;
+    max-height: 200px;
+    border-radius: 10%;
+    background-color: yellowgreen;
+}
+
+
+.empty-card-slot {
     border: 1px solid black;
-    display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: 1fr 20px 1fr;
-    /* grid-template-areas: 'board-top-part'
-                         'spacer-area'
-                         'board-bottom-part'; */
 }
 
-.board-spacer {
-    /* background-color: darkgoldenrod; */
-    /* width: 300px; */
-    /* height: 20px; */
-    /* margin: 0; */
+.board-stats-part {
+    padding: 15px 0px 0px 20px;
+    background-color: slategrey;
 }
 
-.board-top-part {
-    display: grid;
-    grid-template-columns: 170px 170px 170px 170px 170px 170px 170px;
-    grid-template-rows: 1fr;
-    grid-template-areas: 'draw-deck-container-area solution-slot-container-area';
-    padding: 15px 0px 0px 15px;
-    /* background-color: brown; */
-}
-
-.board-bottom-part {
-    display: grid;
-    grid-template-columns: 170px 170px 170px 170px 170px 170px 170px;
-    grid-template-rows: 1fr;
-    grid-template-areas: 'draw-deck-container-area solution-slot-container-area';
-    /* background-color: cornflowerblue; */
+.board {
+    border: 1px solid black;
+    display: block;
+    background-color: teal;
+    padding: 0px 00px 40px 15px;
+    margin-left: 0;
 }
 
 .draw-deck-container {
@@ -53,22 +83,6 @@ body {
     grid-area: unsolved-slot-container-area;
 }
 
-.empty-card-slot {
-    margin: 0;
-    width: 150px;
-    height: 200px;
-    border: 1px solid black;
-    border-radius: 10%;
-    padding: 5px 5px 5px 5px;
-}
-
-.card-gap {
-    margin: 0;
-    width: 150px;
-    height: 200px;
-    /* border: 1px solid black; */
-    border-radius: 10%;
-}
 
 .top-left {
     position: absolute;
@@ -119,19 +133,76 @@ body {
     cursor: pointer;
 }
 
-/* .unselectable {
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-} */
-
 ::selection {
     background-color: transparent;
 }
 
-.board-stats-part {
-    padding: 15px 0px 0px 20px;
+.card {
+    /* position: absolute; */
+    width: 150px;
+    max-width: 150px;
+    height: 200px;
+    max-height: 200px;
+    border: 1px solid black;
+    border-radius: 10%;
+    /* padding: 5px 5px 5px 5px; */
+    overflow: hidden;
+}
+
+.card span {
+    padding: 5px 5px 5px 5px;
+}
+
+.card-facing-front {
+    background-color: white;
+}
+
+.card-facing-back {
+    background-image: url("../img/deck.webp");
+    background-size: cover;
+}
+
+.card-design-back {
+    position: relative;
+    /* background-color: teal; */
+    background-image: url("../img/deck.webp");
+    background-size: cover;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    /* Fix contrast and blurry downscaling issues in Chrome. */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
+    width: 100%;
+    height: 100%;
+    border-radius: 10%;
+    z-index: 1;
+}
+
+.heart {
+    color: rgb(253, 32, 32);
+}
+
+.diamond {
+    color: rgb(253, 32, 32);
+}
+
+.club {
+    color: black;
+}
+
+.spade {
+    color: black;
+}
+
+.card-design {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align:center;
+    font-size: 3ex;
+    border-radius: 10%;
+}
+.card-center-symbol {
+    font-size: 16ex;
 }
