@@ -1,6 +1,12 @@
 body {
     margin: 0;
+    /* padding: 0; */
     background-color: rgb(67, 155, 79);
+}
+
+.app {
+    width: 100vw;
+    height: 100vh;
 }
 
 .newline {
@@ -50,7 +56,6 @@ body {
     height: 200px;
     max-height: 200px;
     border-radius: 10%;
-    background-color: yellowgreen;
 }
 
 
@@ -60,13 +65,13 @@ body {
 
 .board-stats-part {
     padding: 15px 0px 0px 20px;
-    background-color: slategrey;
 }
 
 .board {
+    width: 98.5vw;
+    height: 96.5vh;
     border: 1px solid black;
     display: block;
-    background-color: teal;
     padding: 0px 00px 40px 15px;
     margin-left: 0;
 }
