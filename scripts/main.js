@@ -111,7 +111,6 @@ function getWarCard(warsIndex, playerIndex, cardIndex) {
         console.log("getWarCard warPile", warPile);
         
         // Player has sufficient cards left to fill this war slot.
-        console.log("warPile.length", warPile.length);
         if (warPile.length > cardIndex) {
             // Get HTMLElement for the given Card.
             myDiv = getCardHTML(warPile.items[cardIndex]);
@@ -249,13 +248,11 @@ function flipHTMLCard(card) {
  * @param {Cards} dst Destination pile.
  */
 function moveCard(card, source, destination, destinationIndex = 0) {
-    console.log("moveCard card", card);
-    console.log("moveCard destination", destination);
+    // console.log("moveCard(card, destination, destinationIndex)", card, source, destination, destinationIndex);
     // Get Card's UUID.
     let cardUUID = card.getAttribute("cardID");
     // Get card's position in source array.
     let cardSourceIndex = source.getItemsIndexByUUID(cardUUID);
-    // console.log("cardSourceIndex", cardSourceIndex);
 
     if (source.itemsMap.has(cardUUID) == false) {
         console.error("Attempted to move a card from a source it isn't in.", card, source);
@@ -264,7 +261,6 @@ function moveCard(card, source, destination, destinationIndex = 0) {
 
     // Remove card from its source array.
     let removedCard = source.splice(cardSourceIndex, 1)[0];
-    // console.log("Removed card", removedCard);
 
     // Insert card into the destination array at index.
     // destination.push(removedCard);
@@ -279,7 +275,6 @@ function playCard(playersIndex, cardHTML) {
 
     // Flip card object (from back to front).
     movedCard.flip();
-    console.log("movedCard", movedCard);
 
     // Update view.
     updateView();
@@ -436,7 +431,7 @@ function battleCPU(playedCardP1, playedCardP2) {
 }
 
 function clickedCard(cardHTML) {
-    console.log("clickedCard(card)", cardHTML);
+    // console.log("clickedCard(card)", cardHTML);
     if (cardHTML.classList.contains("clickable")) {
         // let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner. // FIXME: For use with 2 human players, currently only computer is implemented.
 
