@@ -242,20 +242,20 @@ function flipHTMLCard(card) {
 }
 
 /**
- * Moves a card from one pile to another.
+ * Moves a card HTMLElement from one pile to another.
  * @param {HTMLElement} card
  * @param {Cards} src Source pile.
  * @param {Cards} dst Destination pile.
  */
-function moveCard(card, source, destination, destinationIndex = 0) {
+function moveCardHTML(cardHTML, source, destination, destinationIndex = 0) {
     // console.log("moveCard(card, destination, destinationIndex)", card, source, destination, destinationIndex);
     // Get Card's UUID.
-    let cardUUID = card.getAttribute("cardID");
+    let cardUUID = cardHTML.getAttribute("cardID");
     // Get card's position in source array.
     let cardSourceIndex = source.getItemsIndexByUUID(cardUUID);
 
     if (source.itemsMap.has(cardUUID) == false) {
-        console.error("Attempted to move a card from a source it isn't in.", card, source);
+        console.error("Attempted to move a card from a source it isn't in.", cardHTML, source);
         return;
     }
 
@@ -271,7 +271,7 @@ function moveCard(card, source, destination, destinationIndex = 0) {
 
 function playCard(playersIndex, cardHTML) {
     // Move card from deck to pile, and store the returned object in a variable for later use.
-    let movedCard = moveCard(cardHTML, playerDecks[playersIndex], playerPiles[playersIndex]);
+    let movedCard = moveCardHTML(cardHTML, playerDecks[playersIndex], playerPiles[playersIndex]);
 
     // Flip card object (from back to front).
     movedCard.flip();
@@ -284,7 +284,7 @@ function playCard(playersIndex, cardHTML) {
 
 function playWarCard(playersIndex, cardHTML, destinationPile, facingBack = true) {
     // Move card from deck to pile, and store the returned object in a variable for later use.
-    let movedCard = moveCard(cardHTML, playerDecks[playersIndex], destinationPile[playersIndex]);
+    let movedCard = moveCardHTML(cardHTML, playerDecks[playersIndex], destinationPile[playersIndex]);
 
     // Face the given direction.
     facingBack ? movedCard.faceBack() : movedCard.faceFront();
@@ -425,8 +425,8 @@ function battleCPU(playedCardP1, playedCardP2) {
             updateView();
             
             // Insert all played cards to the bottom of battle victor's stack (and make it face backwards again).
-            moveCard(document.getElementById(playedCardP1.id), playerPiles[PLAYER1_INDEX], playerDecks[battleVictor], 0).faceBack();
-            moveCard(document.getElementById(playedCardP2.id), playerPiles[PLAYER2_INDEX], playerDecks[battleVictor], 0).faceBack();
+            moveCardHTML(document.getElementById(playedCardP1.id), playerPiles[PLAYER1_INDEX], playerDecks[battleVictor], 0).faceBack();
+            moveCardHTML(document.getElementById(playedCardP2.id), playerPiles[PLAYER2_INDEX], playerDecks[battleVictor], 0).faceBack();
         }
 }
 
