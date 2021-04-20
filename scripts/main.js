@@ -21,13 +21,18 @@ let cpuDeck = new Cards();
 let playerPile = new Cards();
 let cpuPile = new Cards();
 // War cards players have played. [[new Cards(), new Cards()]]
-let playerWarsPiles = [];
-let currentPlayerWarIndex = -1;
+let playerWarPiles = [];
+let cpuWarPiles = [];
+// let currentPlayerWarIndex = -1;
 // Code readability helper variables.
 // const PLAYER1_INDEX = 0;
 // const PLAYER2_INDEX = 1;
 // let cpuPlayer = 1;
 const indent = "&nbsp;&nbsp;&nbsp;&nbsp;"
+const SLOT_SPACER = `<div class="card-spacer"></div>`;
+const SLOT_GAP_HALF = `<div class="card-gap-half"></div>`;
+const SLOT_EMPTY = `<div class="card-slot empty-card-slot"></div>`;
+const NEWLINE = `<div class="newline"></div>`;
 
 // View:
 function updateView() {
@@ -74,54 +79,62 @@ function updateView() {
             <div id="player2-deck" class="card-slot deck-slot unclickable" playersIndex="1">
                 ${cpuDeck.length > 0  ? getCardHTML(cpuDeck.items[cpuDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
-            <div class="newline"></div>
-            <div id="player1-war-slot1" class="card-slot" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 0, 0)}
-            </div>
-            <div class="card-spacer"></div>
-            <div id="player1-war-slot2" class="card-slot" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 0, 1)}
-            </div>
-            <div class="card-spacer"></div>
-            <div id="player1-war-slot3" class="card-slot" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 0, 2)}
-            </div>
-            <div class="card-gap-half"></div>
-            <div id="player1-war-slot1" class="card-slot unclickable" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 1, 0)}
-            </div>
-            <div class="card-spacer"></div>
-            <div id="player1-war-slot2" class="card-slot unclickable" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 1, 1)}
-            </div>
-            <div class="card-spacer"></div>
-            <div id="player1-war-slot3" class="card-slot unclickable" playersIndex="0">
-                ${getWarCard(currentPlayerWarIndex, 1, 2)}
-            </div>
+            ${getWarHTMLs()}
         </div>
     `;
 }
 
 // Controller:
-function getWarCard(warsIndex, playerIndex, cardIndex) {
-    let myDiv = `<div class="card-slot empty-card-slot"></div>`;
+/**
+ * 
+ * @param {Cards} warPile 
+ * @param {number} pileIndex 
+ * @returns {String}
+ */
+function getWarCard(cards, cardIndex) {
+    let myDiv = SLOT_EMPTY;
 
-    // There is actually a war on.
-    if (currentPlayerWarIndex > -1) {
-        console.log("getWarCard cardIndex", cardIndex);
-        console.log("getWarCard currentPlayerWarIndex", currentPlayerWarIndex);
-        // War pile Cards object.
-        let warPile = playerWarsPiles[warsIndex][playerIndex];
-        console.log("getWarCard warPile", warPile);
-        
-        // Player has sufficient cards left to fill this war slot.
-        if (warPile.length > cardIndex) {
-            // Get HTMLElement for the given Card.
-            myDiv = getCardHTML(warPile.items[cardIndex]);
-        }
+    // Cards holds enough cards to have this index.
+    if (cards.length > cardIndex) {
+        // Generate HTML String for the given Card.
+        myDiv = `<div class="card-slot unclickable">${getCardHTML(cards.items[cardIndex])}</div>`;
     }
 
     return myDiv;
+}
+
+/**
+ * 
+ * @param {Cards} cards A Cards element that holds Card elements.
+ * @returns {String} HTML String
+ */
+function getWarHTML(cards) {
+    let warPile = "";
+
+    warPile += `${getWarCard(cards, 0)}`;
+    warPile += `${SLOT_SPACER}${getWarCard(cards, 1)}`;
+    warPile += `${SLOT_SPACER}${getWarCard(cards, 2)}`;
+
+    return warPile;
+}
+
+function getWarHTMLs() {
+    if(playerWarPiles.length <= 0 || cpuWarPiles.length <= 0) return;
+    if (playerWarPiles.length != cpuWarPiles.length ) {
+            throw new Error(`War piles are of unequal length! ${playerWarPiles.length} != ${cpuWarPiles.length}`);
+    }
+    
+    let warsDiv = "";
+    
+    // Append wars to div, one war at a time.
+    for (let i = 0; i < playerWarPiles.length; i++) {
+        //         \n        Player side                          GAP        CPU Side
+        warsDiv += NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i]);
+    }
+
+    console.log("warsDiv", warsDiv);
+    return warsDiv;
+
 }
 
 function playerDeckStatsHTML(deck) {
@@ -211,18 +224,6 @@ function createDeck(facingBack = CARD_FACING_BACK, owner = null) {
 function getCardOwnerIndex(card) {
     return parseInt(card.parentElement.getAttribute("playersIndex"));
 }
-
-// function cardFaceFront(card) {
-//     card.classList.remove("card-facing-back");
-//     card.firstElementChild.style.display = "block";
-//     card.classList.add("card-facing-front");
-// }
-
-// function cardFaceBack(card) {
-//     card.classList.remove("card-facing-front");
-//     card.firstElementChild.style.display = "none";
-//     card.classList.add("card-facing-back");
-// }
 
 /**
  * Flips a HTMLElement Card.
@@ -326,8 +327,8 @@ function finalWarWon() {
 
 function warCPU() {
     console.log("Warring CPU!")
-    let player1Deck = playerDecksOLD[PLAYER1_INDEX];
-    let player2Deck = playerDecksOLD[PLAYER2_INDEX];
+    // let player1Deck = playerDecksOLD[PLAYER1_INDEX];
+    // let player2Deck = playerDecksOLD[PLAYER2_INDEX];
     
     // Declare a new war.
     let warPile = []
@@ -394,7 +395,7 @@ function battleCPU(playedCardP1, playedCardP2) {
         }
         if (battleVictorCard instanceof Array) {
             // Draw: It is WAR, then!
-            // warCPU();
+            warCPU();
         } else {
             let battleVictor = battleVictorCard.owner;
             console.log("battleVictor", battleVictor);
@@ -407,8 +408,6 @@ function battleCPU(playedCardP1, playedCardP2) {
             updateView();
             
             // Insert all played cards to the bottom of battle victor's stack (and make it face backwards again).
-            // let dest;
-            // battleVictor == 0 ? dest = playerDeck : dest = cpuDeck;
             moveCard(playedCardP1, playerPile, battleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
             moveCard(playedCardP2, cpuPile, battleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
         }
@@ -431,7 +430,6 @@ function dealCards(decks, cards) {
     // Shuffle the deck of cards.
     if (!cards.shuffle()) {
         console.error("Failed to shuffle cards, expect breakage!");
-        // alert("Failed to shuffle cards, expect breakage!");
     }
     console.log("cards", cards);
 
