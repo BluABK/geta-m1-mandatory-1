@@ -135,6 +135,17 @@ class Cards {
     }
 
     /**
+     * Return last item in list (easy shorthand).
+     */
+    get lastItem() {
+        let retv = null
+
+        if (this.items.length > 0) retv = this.items[this.items.length -1];
+
+        return retv;
+    }
+
+    /**
      * Find the items index of an item given its UUID.
      * @param {*} uuid UUID property of item to find.
      * @returns Index of mathced item in items Array or null.
