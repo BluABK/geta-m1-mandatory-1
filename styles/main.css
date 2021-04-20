@@ -138,6 +138,10 @@ body {
     cursor: pointer;
 }
 
+.unclickable {
+    cursor: not-allowed;
+}
+
 ::selection {
     background-color: transparent;
 }
