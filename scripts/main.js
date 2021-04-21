@@ -253,7 +253,10 @@ function getCardOwnerIndex(card) {
  function moveCard(card, source, destination, pushNotSplice = true, destinationIndex = 0) {
      console.log("moveCard(...)", card, source, destination, pushNotSplice, destinationIndex);
     if (card == undefined) throw new Error("Attempted to move undefined card!");
-    if (source.itemsMap.has(card.id) == false) throw new Error("Attempted to move a card from a source it isn't in.", card, source);
+    if (source.itemsMap.has(card.id) == false) {
+        console.error("Attempted to move a card from a source it isn't in.", card, source, destination, pushNotSplice, destinationIndex);
+        throw new Error("Attempted to move a card from a source it isn't in.", card, source);
+    }
 
     // Remove card from its source array, by index.
     let removedCard = source.splice(source.getItemsIndexByUUID(card.id), 1)[0];
@@ -322,12 +325,21 @@ function finalWarWon() {
     currentPlayerWarIndex = -1;
 }
 
+function declareGameWinner(userWon = false) {
+    if (userWon) {
+        alert("You Won!");
+    } else {
+        alert("You lost!");
+    }
+}
+
 function warCPU() {
     console.log(`Declaring War #${playerWarPiles.length} against CPU!`);
 
     // Make sure the war piles are of equal length.
     if (playerWarPiles.length != cpuWarPiles.length ) {
-        throw new Error(`War piles are of unequal length! ${playerWarPiles.length} != ${cpuWarPiles.length}`);
+        // If not equal, the player with the least amount of cards left has lost.
+        declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
     }
     
     // Declare a new war.
@@ -369,21 +381,24 @@ function warCPU() {
 
     // Move all cards in play into the victor's deck:
     // Move the ones from the normal piles.
-    moveCard(playerPile[playerPile.length -1], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
-    moveCard(cpuPile[cpuPile.length -1], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+    console.log("Spoils of War: Move the ones from the normal piles.");
+    moveCard(playerPile.items[playerPile.length -1], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+    moveCard(cpuPile.items[cpuPile.length -1], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
 
     // Make sure the war piles are of equal length.
     if (playerWarPiles.length != cpuWarPiles.length ) {
-        throw new Error(`War piles are of unequal length! ${playerWarPiles.length} != ${cpuWarPiles.length}`);
+        // If not equal, the player with the least amount of cards left has lost.
+        declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
     }
     
     // Move the ones in the war piles.
+    console.log("Spoils of War: Move the ones in the war piles.");
     // For each war (both sides in tandem).
     for (let i = 0; i < playerWarPiles.length; i++) {
         // For each card in war (both sides in tandem).
         for (let j = 0; j < playerWarPiles[i].length; j++) {
-            moveCard(playerWarPiles[i][j], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
-            moveCard(cpuWarPiles[i][j], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(playerWarPiles[i].items[j], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuWarPiles[i].items[j], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
         }
     }
     // NB: Omitting updateView call here to make result linger on board.
@@ -395,7 +410,7 @@ function playCPU(playerCard, cpuCard = null) {
     
     // Player 2 (CPU): Play card from top of deck/stack.
     let playedCardCPU = null;
-    if (cpuCard) {
+    if (cpuCard instanceof Card) {
         playedCardCPU = playCard(cpuCard, cpuDeck, cpuPile, false, 0, false);
     } else {
         playedCardCPU = playCard(cpuDeck.items[cpuDeck.length -1], cpuDeck, cpuPile, false, 0, false);
