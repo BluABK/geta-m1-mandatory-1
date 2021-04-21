@@ -146,17 +146,25 @@ QUnit.test("Cards.splice", function (assert) {
 
 QUnit.test(`dealCards - Discards and marks a card as "dead", when odd amount of players with even amount of source deck cards.`, function (assert) {
     let originalItems = [1,2,3,4,5,6,7,8,9,10,11,12];
-    let cardsObject = new Cards([1,2,3,4,5,6,7,8,9,10,11,12]);
-    let playerDecks = [new Cards([]), new Cards([]), new Cards([])];
-
-    dealCards(playerDecks, cardsObject);
-
-    assert.notStrictEqual(deadCard, null, "Dead card is not null.");
-    assert.true(originalItems.includes(deadCard), "Dead card is one of the ones from the given deck.");
-    
-    for (let i = 0; i < playerDecks.length; i++) {
-        assert.false(playerDecks[i].items.includes(deadCard), `Dead card is not in player deck #${i}`);
+    let cardsObject = new Cards();
+    for (let i of [1,2,3,4,5,6,7,8,9,10,11,12]) {
+        cardsObject.push(new Card(i));
     }
+    let playerDecks = [new Cards([]), new Cards([]), new Cards([]), new Cards([]), new Cards([])];
+
+    let deadCards = dealCards(playerDecks, cardsObject);
+    console.log("asdsadsdasad", deadCards);
+
+    for (let deadCard of deadCards) {
+        console.log(deadCard);
+        assert.notStrictEqual(deadCard, null, `Dead card '${deadCard.value}' is not null.`);
+        assert.true(originalItems.includes(deadCard.value), `Dead card '${deadCard.value}' stems from the original deck.`);
+
+        for (let i = 0; i < playerDecks.length; i++) {
+            assert.false(playerDecks[i].items.includes(deadCard), `Dead card is not in player deck #${i}`);
+        }
+    }
+    
 });
 
 QUnit.test("dealCards - Modifies supplied decks.", function (assert) {
