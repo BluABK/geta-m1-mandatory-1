@@ -29,30 +29,25 @@ function updateView() {
      * Notes:
      * Each player deck and discard pile only displays the last card from their respective stack.
      */
-    console.log("Updating view...");
-    let latestBattleInfo = "";
-
+    // Statistics preparation.
     let latestBattleVictor = "No one";
+
     if (battleLog.length > 0) {
         if (battleLog[battleLog.length -1]["draw"]) {
             latestBattleVictor = "Draw!"
         } else {
-            battleLog[battleLog.length -1]["UserWon"] ? latestBattleVictor = "Player" : latestBattleVictor = "Computer";
+            battleLog[battleLog.length -1]["userWon"] ? latestBattleVictor = "Player" : latestBattleVictor = "Computer";
         }
-    } else {
-
     }
 
-
-    latestBattleInfo = `Latest Battle Victor: ${latestBattleVictor}`;
-
+    // Draw the app view.
     document.getElementById("app").innerHTML = `
         <div class="board">
             <div id="board-stats" class="board-stats-part">
                 ${allPlayersStatsHTML()}<br/>
                 <br/>
                 Battles fought: ${battleLog.length}.<br/>
-                ${latestBattleInfo ? latestBattleInfo : `${TEXT_INDENT}No battle have yet taken place.`}
+                Latest Battle Victor: ${latestBattleVictor}
             </div>
             ${VERICAL_SPACER}
             <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.firstElementChild)"' : ""} playersIndex="0">
