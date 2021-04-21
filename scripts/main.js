@@ -6,12 +6,7 @@ const SUITS = ["heart", "diamond", "spade", "club"];
 // Card that cannot be used in play (usually happens with odd amount of players with an even amount of source deck cards).
 let deadCard = null;
 
-let lastBattleVictor = null;
-let lastBattle = {
-    "p1Card": null,
-    "p2Card": null,
-    "victor": NaN
-}
+let battleLog = [];
 // Cards players draw from.
 let playerDeck = new Cards();
 let cpuDeck = new Cards();
@@ -29,6 +24,7 @@ let cpuWarPiles = [];
 // const PLAYER2_INDEX = 1;
 // let cpuPlayer = 1;
 const indent = "&nbsp;&nbsp;&nbsp;&nbsp;"
+const VERICAL_SPACER = `<div class="vertical-spacer"></div>`;
 const SLOT_SPACER = `<div class="card-spacer"></div>`;
 const SLOT_GAP_HALF = `<div class="card-gap-half"></div>`;
 const SLOT_EMPTY = `<div class="card-slot empty-card-slot"></div>`;
@@ -42,24 +38,29 @@ function updateView() {
      */
     console.log("Updating view...");
     let lastBattleInfo = "";
-    let lastVictorString = lastBattle["victor"] >= 0 ? `Player ${lastBattle["victor"] +1}` : "Draw! (FIXME: WAR)"
 
-    if (lastBattle["p1Card"] && lastBattle["p1Card"]) {
-        // ${getCardHTML(lastBattle["p1Card"])} VS ${getCardHTML(lastBattle["p2Card"])}
-        lastBattleInfo = `
-            ${indent}Victor: Player ${lastBattle["victor"] +1 }
-        `;
+    let latestBattleVictor = "No one";
+    if (battleLog.length > 0) {
+        if (battleLog[battleLog.length -1]["draw"]) {
+            latestBattleVictor = "Draw!"
+        } else {
+            battleLog[battleLog.length -1]["playerWon"] ? latestBattleVictor = "Player" : latestBattleVictor = "Computer";
+        }
+    } else {
+
     }
+
+
+    lastBattleInfo = `Latest Battle Victor: ${latestBattleVictor}`;
 
     document.getElementById("app").innerHTML = `
         <div class="board">
             <div id="board-stats" class="board-stats-part">
                 ${allPlayersStatsHTML()}
-                <br/>
-                Last Battle Outcome:
-                <br/>
+                <br/><br/>
                 ${lastBattleInfo ? lastBattleInfo : `${indent}No battle have yet taken place.`}
             </div>
+            ${VERICAL_SPACER}
             <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.firstElementChild)"' : ""} playersIndex="0">
                 ${playerDeck.length > 0 ? getCardHTML(playerDeck.items[playerDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
@@ -136,7 +137,7 @@ function getWarHTMLs() {
     // Append wars to div, one war at a time.
     for (let i = 0; i < playerWarPiles.length; i++) {
         //         \n        Player side                          GAP        CPU Side
-        warsDiv += NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i], true);
+        warsDiv += NEWLINE + VERICAL_SPACER + NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i], true);
     }
 
     // console.log("warsDiv", warsDiv);
@@ -419,30 +420,41 @@ function playCPU(playerCard, cpuCard = null) {
     return [playedCardPlayer, playedCardCPU]
 }
 
-function battleCPU(playedCardP1, playedCardP2, moveCards = true) {
+function battleCPU(playerCard, cpuCard, moveCards = true) {
         // Battle!
         let battleVictorCard;
         try {
-            battleVictorCard = determineBattleVictor(playedCardP1, playedCardP2);
+            battleVictorCard = determineBattleVictor(playerCard, cpuCard);
         } catch (error) {
             console.error(error);
             throw error;
         }
         if (battleVictorCard instanceof Array) {
             // Draw: It is WAR, then!
+
+            // Update Battle log
+            battleLog.push({
+                "draw": true,
+                "playerWon": null,
+                "playerCard": playerCard,
+                "cpuCard": cpuCard
+            })
+
+            // Go to war!
             warCPU();
         } else {
-            let battleVictor = battleVictorCard.owner;
-            console.log("battleVictor", battleVictor);
-            lastBattleVictor = battleVictor;
-            lastBattle["p1Card"] = playedCardP1;
-            lastBattle["p2Card"] = playedCardP1;
-            lastBattle["victor"] = battleVictor;
+            // Update Battle log
+            battleLog.push({
+                "draw": false,
+                "playerWon": battleVictorCard.id === playerCard.id,
+                "playerCard": playerCard,
+                "cpuCard": cpuCard
+            })
             
             if (moveCards) {
                 // Insert all played cards to the bottom of battle victor's deck stack (and make it face backwards again).
-                moveCard(playedCardP1, playerPile, battleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
-                moveCard(playedCardP2, cpuPile, battleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+                moveCard(playerCard, playerPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
+                moveCard(cpuCard, cpuPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
             }
         }
 }
