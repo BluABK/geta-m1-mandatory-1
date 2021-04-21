@@ -1,4 +1,5 @@
 // Model:
+let gameOver = false;
 const CARD_FACING_BACK = true;
 // As the value of Ace depends upon the card game, define it as a constant that can easily be changed later.
 const ACE_FACE_CARD_VALUE = 14;
@@ -48,8 +49,9 @@ function updateView() {
     document.getElementById("app").innerHTML = `
         <div class="board">
             <div id="board-stats" class="board-stats-part">
-                ${allPlayersStatsHTML()}
-                <br/><br/>
+                ${allPlayersStatsHTML()}<br/>
+                <br/>
+                Battles fought: ${battleLog.length}.<br/>
                 ${latestBattleInfo ? latestBattleInfo : `${TEXT_INDENT}No battle have yet taken place.`}
             </div>
             ${VERICAL_SPACER}
@@ -197,7 +199,6 @@ function createCardFrontDesignHTML(value, suit, hide = true) {
 
 function getCardHTML(cardObject, clickable = true) {
     let cardDesign = createCardFrontDesignHTML(cardObject.value, cardObject.suit, cardObject.facingBack);
-    // let cardHTML = `<div id="${cardObject.id}" class="card ${cardObject.suit} card-facing-${cardObject.facingBack ? "back" : "front"} ${clickable ? "clickable" : ""}" value="${cardObject.value}" onClick="clickedCard(this)" cardId="${cardObject.id}">${cardDesign}</div>`
     let cardHTML = `<div id="${cardObject.id}" class="card ${cardObject.suit} card-facing-${cardObject.facingBack ? "back" : "front"}" value="${cardObject.value}" cardId="${cardObject.id}">${cardDesign}</div>`
 
     return cardHTML;
@@ -244,16 +245,19 @@ function getCardOwnerIndex(card) {
  * @returns {Card} Card that was moved.
  */
  function moveCard(card, source, destination, pushNotSplice = true, destinationIndex = 0) {
-     console.log("moveCard(...)", card, source, destination, pushNotSplice, destinationIndex);
+    // Check if the game is already over before moving cards.
+    checkIfGameOver();
+    console.log("moveCard(...)", card, source, destination, pushNotSplice, destinationIndex);
+
     if (card == undefined) throw new Error("Attempted to move undefined card!");
     if (source.itemsMap.has(card.id) == false) {
         console.error("Attempted to move a card from a source it isn't in.", card, source, destination, pushNotSplice, destinationIndex);
-        throw new Error("Attempted to move a card from a source it isn't in.", card, source);
+        throw new Error("Attempted to move a card from a source it isn't in.");
     }
 
     // Remove card from its source array, by index.
     let removedCard = source.splice(source.getItemsIndexByUUID(card.id), 1)[0];
-
+    
     if (pushNotSplice) {
         // Append card to array.
         destination.push(removedCard);
@@ -262,6 +266,9 @@ function getCardOwnerIndex(card) {
         destination.splice(destinationIndex, 0, removedCard);
     }
 
+    // Check if the game is over after moving the card out of the source stack that could very well be a player's deck.
+    checkIfGameOver();
+    
     return removedCard;
 }
 
@@ -313,12 +320,32 @@ function determineBattleVictor(card1, card2) {
 }
 
 function declareGameWinner(userWon = false) {
-    if (userWon) {
+    if (userWon === null) {
+        console.log("It is a draw! :o");
+        alert("It is a draw! :o");
+    } else if (userWon === true) {
         console.log("User won!");
         alert("You Won!");
     } else {
         alert("You lost!");
         console.log("User lost!");
+    }
+
+    gameOver = true;
+
+    updateView();
+}
+
+function checkIfGameOver() {
+    // Make sure the war piles are of equal length.
+    if (playerDeck.length == 0 || cpuDeck.length == 0) {
+        if (playerDeck.length == cpuDeck.length) {
+            // If not equal, the player with the least amount of cards left has lost.
+            declareGameWinner(null);
+        } else {
+            // If not equal, the player with the least amount of cards left has lost.
+            declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
+        }
     }
 }
 
@@ -366,7 +393,7 @@ function warCPU() {
 
     let userWonTheWar = battleLog[battleLog.length -1]["userWon"];
     console.log(`Wars won by, ${userWonTheWar ? "User" : "Computer"}`);
-    
+
     // Display the war(s) result before moving cards out of their slots.
     updateView();
 
@@ -415,42 +442,46 @@ function playCPU(playerCard, cpuCard = null) {
 }
 
 function battleCPU(playerCard, cpuCard, moveCards = true) {
-        // Battle!
-        let battleVictorCard;
-        try {
-            battleVictorCard = determineBattleVictor(playerCard, cpuCard);
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-        if (battleVictorCard instanceof Array) {
-            // Draw: It is WAR, then!
+    // Battle!
+    let battleVictorCard;
+    try {
+        battleVictorCard = determineBattleVictor(playerCard, cpuCard);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+    if (battleVictorCard instanceof Array) {
+        // Draw: It is WAR, then!
 
-            // Update Battle log
-            battleLog.push({
-                "draw": true,
-                "userWon": null,
-                "userCard": playerCard,
-                "cpuCard": cpuCard
-            })
+        // Update Battle log
+        battleLog.push({
+            "draw": true,
+            "userWon": null,
+            "userCard": playerCard,
+            "cpuCard": cpuCard
+        });
 
-            // Go to war!
-            warCPU();
-        } else {
-            // Update Battle log
-            battleLog.push({
-                "draw": false,
-                "userWon": battleVictorCard.id === playerCard.id,
-                "userCard": playerCard,
-                "cpuCard": cpuCard
-            })
-            
-            if (moveCards) {
-                // Insert all played cards to the bottom of battle victor's deck stack (and make it face backwards again).
-                moveCard(playerCard, playerPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
-                moveCard(cpuCard, cpuPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
-            }
+        updateView();
+
+        // Go to war!
+        warCPU();
+    } else {
+        // Update Battle log
+        battleLog.push({
+            "draw": false,
+            "userWon": battleVictorCard.id === playerCard.id,
+            "userCard": playerCard,
+            "cpuCard": cpuCard
+        });
+
+        updateView();
+        
+        if (moveCards) {
+            // Insert all played cards to the bottom of battle victor's deck stack (and make it face backwards again).
+            moveCard(playerCard, playerPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuCard, cpuPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
         }
+    }
 }
 
 function clickedPlayerDeck(cardHTML) {
