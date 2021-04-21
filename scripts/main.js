@@ -122,7 +122,6 @@ function getWarHTML(cards, reverse = false) {
         warPile += `${SLOT_SPACER}${getWarCard(cards, 2)}`;
     }
 
-
     return warPile;
 }
 
@@ -247,26 +246,42 @@ function getCardOwnerIndex(card) {
  * @param {Card} card
  * @param {Cards} src Source pile.
  * @param {Cards} dst Destination pile.
+ * @param {boolean} pushNotSplice If true, push instead of splice into destination (destinationIndex is then unused).
+ * @param {number} destinationIndex Index of destination to splice/insert at.
  * @returns {Card} Card that was moved.
  */
- function moveCard(card, source, destination, destinationIndex = 0) {
+ function moveCard(card, source, destination, pushNotSplice = true, destinationIndex = 0) {
+     console.log("moveCard(...)", card, source, destination, pushNotSplice, destinationIndex);
     if (card == undefined) throw new Error("Attempted to move undefined card!");
-    console.log("moveCard(card, destination, destinationIndex)", card, source, destination, destinationIndex);
     if (source.itemsMap.has(card.id) == false) throw new Error("Attempted to move a card from a source it isn't in.", card, source);
 
     // Remove card from its source array, by index.
     let removedCard = source.splice(source.getItemsIndexByUUID(card.id), 1)[0];
 
-    // Insert card into the destination array at index.
-    // destination.push(removedCard);
-    destination.splice(destinationIndex, 0, removedCard);
+    if (pushNotSplice) {
+        // Append card to array.
+        destination.push(removedCard);
+    } else {
+        // Insert card into the destination array at index.
+        destination.splice(destinationIndex, 0, removedCard);
+    }
 
     return removedCard;
 }
 
-function playCard(card, source, destination, facingBack = false) {
+/**
+ * 
+ * @param {*} card 
+ * @param {*} source Source pile.
+ * @param {*} destination Destination pile.
+ * @param {*} pushNotSplice If true, push instead of splice into destination (destinationIndex is then unused).
+ * @param {*} destinationIndex Index of destination to splice/insert at.
+ * @param {*} facingBack 
+ * @returns Card that was played (and moved).
+ */
+function playCard(card, source, destination, pushNotSplice = true, destinationIndex = 0, facingBack = false) {
     // Move card from source to destination, and store the returned object in a variable for later use.
-    let movedCard = moveCard(card, source, destination);
+    let movedCard = moveCard(card, source, destination, pushNotSplice, destinationIndex);
 
     // Face the given direction.
     facingBack ? movedCard.faceBack() : movedCard.faceFront();
@@ -275,33 +290,6 @@ function playCard(card, source, destination, facingBack = false) {
     updateView();
 
     return movedCard;
-}
-
-// function playWarCard(playersIndex, cardHTML, destinationPile, facingBack = true) {
-//     // Move card from deck to pile, and store the returned object in a variable for later use.
-//     let movedCard = moveCardHTML(cardHTML, playerDecksOLD[playersIndex], destinationPile[playersIndex]);
-
-//     // Face the given direction.
-//     facingBack ? movedCard.faceBack() : movedCard.faceFront();
-//     console.log("movedCard (war)", movedCard);
-
-//     // Update view.
-//     updateView();
-
-//     return movedCard;
-// }
-
-/**
- * Retrieve a given Player card from Cards stack, from View/document.
- * @param {number} playerIndex Player to retrieve card from.
- * @param {Cards} stack Which stack to retrieve card from.
- * @param {number} stackIndex Which card within the stack to retrieve.
- * @returns {HTMLElement} Retrieved card HTML or null.
- */
-function getPlayer2ViewCardHTML(playerIndex, stack, stackIndex) {
-    // let cardHTML = null;
-    // cardHTML = document.getElementById()
-    console.error("Not implemented!");
 }
 
 /**
@@ -354,17 +342,20 @@ function warCPU() {
         // Last round: Card should face up now.
         if (i === 2) facingBack = false;
         
+        let plrDestIndex = playerWarPiles[currentWarCardsIndex].length -1;
+        
         // Player draws card from top of deck/stack, and push the returned Card to Player's war piles.
-        let playerDrawnCard = playCard(playerDeck.items[playerDeck.length - 1], playerDeck, playerWarPiles[currentWarCardsIndex], facingBack);
+        let playerDrawnCard = playCard(playerDeck.items[playerDeck.length - 1], playerDeck, playerWarPiles[currentWarCardsIndex], true, NaN, facingBack);
         console.log(`War #${playerWarPiles.length}: Player drew [Card ${i+1}/3]: ${playerDrawnCard.value} ${playerDrawnCard.suit}`)
         
+        let cpuDestIndex = cpuWarPiles[currentWarCardsIndex].length -1;
+        
         // CPU draws card from top of deck/stack, and push the returned Card to CPU's war piles.
-        let cpuDrawnCard = playCard(cpuDeck.items[cpuDeck.length - 1], cpuDeck, cpuWarPiles[currentWarCardsIndex], facingBack);
+        let cpuDrawnCard = playCard(cpuDeck.items[cpuDeck.length - 1], cpuDeck, cpuWarPiles[currentWarCardsIndex], true, NaN, facingBack);
         console.log(`War #${playerWarPiles.length}: CPU drew [Card ${i+1}/3]: ${cpuDrawnCard.value} ${cpuDrawnCard.suit}`)
     }
 
     // Battle of the third card.
-    // playerWarCards = playerWarPiles[currentWarCardsIndex].lastItem;
     console.log("lastPlayerCard", playerWarPiles[currentWarCardsIndex].lastItem);
     console.log("lastCPUCard", cpuWarPiles[currentWarCardsIndex].lastItem);
     updateView();
@@ -378,8 +369,8 @@ function warCPU() {
 
     // Move all cards in play into the victor's deck:
     // Move the ones from the normal piles.
-    moveCard(playerPile[playerPile.length -1], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
-    moveCard(cpuPile[cpuPile.length -1], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
+    moveCard(playerPile[playerPile.length -1], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+    moveCard(cpuPile[cpuPile.length -1], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
 
     // Make sure the war piles are of equal length.
     if (playerWarPiles.length != cpuWarPiles.length ) {
@@ -391,8 +382,8 @@ function warCPU() {
     for (let i = 0; i < playerWarPiles.length; i++) {
         // For each card in war (both sides in tandem).
         for (let j = 0; j < playerWarPiles[i].length; j++) {
-            moveCard(playerWarPiles[i][j], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
-            moveCard(cpuWarPiles[i][j], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
+            moveCard(playerWarPiles[i][j], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuWarPiles[i][j], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
         }
     }
     // NB: Omitting updateView call here to make result linger on board.
@@ -400,14 +391,14 @@ function warCPU() {
 
 function playCPU(playerCard, cpuCard = null) {
     // Player 1: Play the clicked card.
-    let playedCardPlayer = playCard(playerCard, playerDeck, playerPile, false);
+    let playedCardPlayer = playCard(playerCard, playerDeck, playerPile, false, 0, false);
     
     // Player 2 (CPU): Play card from top of deck/stack.
     let playedCardCPU = null;
     if (cpuCard) {
-        playedCardCPU = playCard(cpuCard, cpuDeck, cpuPile, false);
+        playedCardCPU = playCard(cpuCard, cpuDeck, cpuPile, false, 0, false);
     } else {
-        playedCardCPU = playCard(cpuDeck.items[cpuDeck.length -1], cpuDeck, cpuPile, false);
+        playedCardCPU = playCard(cpuDeck.items[cpuDeck.length -1], cpuDeck, cpuPile, false, 0, false);
     }
 
     return [playedCardPlayer, playedCardCPU]
@@ -432,14 +423,11 @@ function battleCPU(playedCardP1, playedCardP2, moveCards = true) {
             lastBattle["p1Card"] = playedCardP1;
             lastBattle["p2Card"] = playedCardP1;
             lastBattle["victor"] = battleVictor;
-
-            // Update view before moving cards to have the outcome still shown on screen.
-            // updateView();
             
             if (moveCards) {
                 // Insert all played cards to the bottom of battle victor's deck stack (and make it face backwards again).
-                moveCard(playedCardP1, playerPile, battleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
-                moveCard(playedCardP2, cpuPile, battleVictor == 0 ? playerDeck : cpuDeck, 0).faceBack();
+                moveCard(playedCardP1, playerPile, battleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+                moveCard(playedCardP2, cpuPile, battleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
             }
         }
 }
