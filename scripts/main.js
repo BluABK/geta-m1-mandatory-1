@@ -10,13 +10,15 @@ let deadCard = null;
 
 let battleLog = [];
 // Cards players draw from.
-let playerDeck = new Cards();
+let userDeck = new Cards();
 let cpuDeck = new Cards();
-let playerPile = new Cards();
+let userPile = new Cards();
 let cpuPile = new Cards();
-// War cards players have played. [[new Cards(), new Cards()]]
-let playerWarPiles = [];
+// War cards players have played.
+let userWarPiles = [];
 let cpuWarPiles = [];
+
+// Strings and elements declared as constants for easier re-use and better readability.
 const TEXT_INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
 const VERICAL_SPACER = `<div class="vertical-spacer"></div>`;
 const SLOT_SPACER = `<div class="card-spacer"></div>`;
@@ -44,13 +46,13 @@ function updateView() {
     // Draw the app view.
     document.getElementById("app").innerHTML = `
         <div class="board">
-            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 && gameOver === false ? "clickable" : "unclickable"}" ${playerDeck.length > 0 && gameOver === false ? 'onClick="clickedPlayerDeck(this.lastElementChild)"' : ""}>
-                ${playerDeck.length > 0 ? '<div class="deck-count-overlay">' + playerDeck.length + '</div>' : ""}
-                ${playerDeck.length > 0 ? getCardHTML(playerDeck.items[playerDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
+            <div id="player1-deck" class="card-slot deck-slot ${userDeck.length > 0 && gameOver === false ? "clickable" : "unclickable"}" ${userDeck.length > 0 && gameOver === false ? 'onClick="clickedPlayerDeck(this.lastElementChild)"' : ""}>
+                ${userDeck.length > 0 ? '<div class="deck-count-overlay">' + userDeck.length + '</div>' : ""}
+                ${userDeck.length > 0 ? getCardHTML(userDeck.items[userDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-spacer"></div>
             <div id="player1-pile" class="card-slot pile-slot card-pile">
-                ${playerPile.length > 0  ? getCardHTML(playerPile.items[playerPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
+                ${userPile.length > 0  ? getCardHTML(userPile.items[userPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="board-top-row-spacer">
                 <div class="board-stats-part">
@@ -117,17 +119,17 @@ function getWarHTML(cards, reverse = false) {
 }
 
 function getWarHTMLs() {
-    if(playerWarPiles.length <= 0 || cpuWarPiles.length <= 0) return "";
-    if (playerWarPiles.length != cpuWarPiles.length ) {
-            throw new Error(`War piles are of unequal length! ${playerWarPiles.length} != ${cpuWarPiles.length}`);
+    if(userWarPiles.length <= 0 || cpuWarPiles.length <= 0) return "";
+    if (userWarPiles.length != cpuWarPiles.length ) {
+            throw new Error(`War piles are of unequal length! ${userWarPiles.length} != ${cpuWarPiles.length}`);
     }
     
     let warsDiv = "";
     
     // Append wars to div, one war at a time.
-    for (let i = 0; i < playerWarPiles.length; i++) {
+    for (let i = 0; i < userWarPiles.length; i++) {
         //         \n        Player side                          GAP        CPU Side
-        warsDiv += NEWLINE + VERICAL_SPACER + NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i], true);
+        warsDiv += NEWLINE + VERICAL_SPACER + NEWLINE + getWarHTML(userWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i], true);
     }
 
     // console.log("warsDiv", warsDiv);
@@ -318,31 +320,31 @@ function declareGameWinner(userWon = false) {
 
 function checkIfGameOver() {
     // Make sure the war piles are of equal length.
-    if (playerDeck.length === 0 || cpuDeck.length === 0) {
-        if (playerDeck.length === cpuDeck.length) {
+    if (userDeck.length === 0 || cpuDeck.length === 0) {
+        if (userDeck.length === cpuDeck.length) {
             // If not equal, the player with the least amount of cards left has lost.
             declareGameWinner(null);
         } else {
             // If not equal, the player with the least amount of cards left has lost.
-            declareGameWinner(playerDeck.length > cpuDeck.length);
+            declareGameWinner(userDeck.length > cpuDeck.length);
         }
     }
 }
 
 function warCPU() {
-    console.log(`Declaring War #${playerWarPiles.length} against CPU!`);
+    console.log(`Declaring War #${userWarPiles.length} against CPU!`);
 
     // Make sure the war piles are of equal length.
-    if (playerWarPiles.length != cpuWarPiles.length ) {
+    if (userWarPiles.length != cpuWarPiles.length ) {
         // If not equal, the player with the least amount of cards left has lost.
-        declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
+        declareGameWinner(userWarPiles.length > cpuWarPiles.length);
     }
     
     // Declare a new war.
-    playerWarPiles.push(new Cards());
+    userWarPiles.push(new Cards());
     cpuWarPiles.push(new Cards());
-    // Position in array for the newly pushed Cards objects (player and cpu have equal length arrays).
-    let currentWarCardsIndex = playerWarPiles.length -1;
+    // Position in array for the newly pushed Cards objects (user and cpu have equal length arrays).
+    let currentWarCardsIndex = userWarPiles.length -1;
     
     // Draw 3 cards, one face up.
     facingBack = true;
@@ -350,26 +352,22 @@ function warCPU() {
         // Last round: Card should face up now.
         if (i === 2) facingBack = false;
         
-        let plrDestIndex = playerWarPiles[currentWarCardsIndex].length -1;
-        
         // Player draws card from top of deck/stack, and push the returned Card to Player's war piles.
-        let playerDrawnCard = playCard(playerDeck.items[playerDeck.length - 1], playerDeck, playerWarPiles[currentWarCardsIndex], true, NaN, facingBack);
-        console.log(`War #${playerWarPiles.length}: Player drew [Card ${i+1}/3]: ${playerDrawnCard.value} ${playerDrawnCard.suit}`)
-        
-        let cpuDestIndex = cpuWarPiles[currentWarCardsIndex].length -1;
+        let userDrawnCard = playCard(userDeck.items[userDeck.length - 1], userDeck, userWarPiles[currentWarCardsIndex], true, NaN, facingBack);
+        console.log(`War #${userWarPiles.length}: User drew [Card ${i+1}/3]: ${userDrawnCard.value} ${userDrawnCard.suit}`)
         
         // CPU draws card from top of deck/stack, and push the returned Card to CPU's war piles.
         let cpuDrawnCard = playCard(cpuDeck.items[cpuDeck.length - 1], cpuDeck, cpuWarPiles[currentWarCardsIndex], true, NaN, facingBack);
-        console.log(`War #${playerWarPiles.length}: CPU drew [Card ${i+1}/3]: ${cpuDrawnCard.value} ${cpuDrawnCard.suit}`)
+        console.log(`War #${userWarPiles.length}: CPU drew [Card ${i+1}/3]: ${cpuDrawnCard.value} ${cpuDrawnCard.suit}`)
     }
 
     // Battle of the third card.
-    console.log("lastPlayerCard", playerWarPiles[currentWarCardsIndex].lastItem);
+    console.log("lastPlayerCard", userWarPiles[currentWarCardsIndex].lastItem);
     console.log("lastCPUCard", cpuWarPiles[currentWarCardsIndex].lastItem);
     updateView();
 
     // Battle the 3rd and final card of each war pile respectively, but don't move cards just yet.
-    battleCPU(playerWarPiles[currentWarCardsIndex].lastItem, cpuWarPiles[currentWarCardsIndex].lastItem, false);
+    battleCPU(userWarPiles[currentWarCardsIndex].lastItem, cpuWarPiles[currentWarCardsIndex].lastItem, false);
 
     let userWonTheWar = battleLog[battleLog.length -1]["userWon"];
     console.log(`Wars won by, ${userWonTheWar ? "User" : "Computer"}`);
@@ -380,36 +378,36 @@ function warCPU() {
     // Move all cards in play into the victor's deck:
     // Move the ones from the normal piles.
     console.log("Spoils of War: Move the ones from the normal piles.");
-    moveCard(playerPile.items[playerPile.length -1], playerPile, userWonTheWar ? playerDeck : cpuDeck, false, 0).faceBack();
-    moveCard(cpuPile.items[cpuPile.length -1], cpuPile, userWonTheWar ? playerDeck : cpuDeck, false, 0).faceBack();
+    moveCard(userPile.items[userPile.length -1], userPile, userWonTheWar ? userDeck : cpuDeck, false, 0).faceBack();
+    moveCard(cpuPile.items[cpuPile.length -1], cpuPile, userWonTheWar ? userDeck : cpuDeck, false, 0).faceBack();
 
     // Make sure the war piles are of equal length.
-    if (playerWarPiles.length != cpuWarPiles.length ) {
+    if (userWarPiles.length != cpuWarPiles.length ) {
         // If not equal, the player with the least amount of cards left has lost.
-        declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
+        declareGameWinner(userWarPiles.length > cpuWarPiles.length);
     }
     
     // Move the ones in the war piles.
     console.log("Spoils of War: Move the ones in the war piles.");
     // For each war Cards (both sides in tandem).
-    for (let i = 0; i < playerWarPiles.length; i++) {
+    for (let i = 0; i < userWarPiles.length; i++) {
         // For each card in war (both sides in tandem). Decrementing backwards loop due to length changing as cards get moved out of the source pile.
-        for (let j = playerWarPiles[i].length -1; j > -1; j--) {
-            moveCard(playerWarPiles[i].items[j], playerWarPiles[i], userWonTheWar ? playerDeck : cpuDeck, false, 0).faceBack();
-            moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], userWonTheWar ? playerDeck : cpuDeck, false, 0).faceBack();
+        for (let j = userWarPiles[i].length -1; j > -1; j--) {
+            moveCard(userWarPiles[i].items[j], userWarPiles[i], userWonTheWar ? userDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], userWonTheWar ? userDeck : cpuDeck, false, 0).faceBack();
         }
     }
 
     // Clear all wars.
-    playerWarPiles = [];
+    userWarPiles = [];
     cpuWarPiles = [];
 
     // NB: Omitting updateView call here to make result linger on board.
 }
 
-function playCPU(playerCard, cpuCard = null) {
+function playCPU(userCard, cpuCard = null) {
     // Player 1: Play the clicked card.
-    let playedCardPlayer = playCard(playerCard, playerDeck, playerPile, false, 0, false);
+    let playedCardPlayer = playCard(userCard, userDeck, userPile, false, 0, false);
     
     // Player 2 (CPU): Play card from top of deck/stack.
     let playedCardCPU = null;
@@ -422,11 +420,11 @@ function playCPU(playerCard, cpuCard = null) {
     return [playedCardPlayer, playedCardCPU]
 }
 
-function battleCPU(playerCard, cpuCard, moveCards = true) {
+function battleCPU(userCard, cpuCard, moveCards = true) {
     // Battle!
     let battleVictorCard;
     try {
-        battleVictorCard = determineBattleVictor(playerCard, cpuCard);
+        battleVictorCard = determineBattleVictor(userCard, cpuCard);
     } catch (error) {
         console.error(error);
         throw error;
@@ -438,7 +436,7 @@ function battleCPU(playerCard, cpuCard, moveCards = true) {
         battleLog.push({
             "draw": true,
             "userWon": null,
-            "userCard": playerCard,
+            "userCard": userCard,
             "cpuCard": cpuCard
         });
 
@@ -450,8 +448,8 @@ function battleCPU(playerCard, cpuCard, moveCards = true) {
         // Update Battle log
         battleLog.push({
             "draw": false,
-            "userWon": battleVictorCard.id === playerCard.id,
-            "userCard": playerCard,
+            "userWon": battleVictorCard.id === userCard.id,
+            "userCard": userCard,
             "cpuCard": cpuCard
         });
 
@@ -459,8 +457,8 @@ function battleCPU(playerCard, cpuCard, moveCards = true) {
         
         if (moveCards) {
             // Insert all played cards to the bottom of battle victor's deck stack (and make it face backwards again).
-            moveCard(playerCard, playerPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
-            moveCard(cpuCard, cpuPile, battleVictorCard.id === playerCard.id ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(userCard, userPile, battleVictorCard.id === userCard.id ? userDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuCard, cpuPile, battleVictorCard.id === userCard.id ? userDeck : cpuDeck, false, 0).faceBack();
         }
     }
 }
@@ -470,7 +468,7 @@ function clickedPlayerDeck(cardHTML) {
     if (gameOver) return;
 
     // Play a single round.
-    let card = playerDeck.itemsMap.get(cardHTML.id);
+    let card = userDeck.itemsMap.get(cardHTML.id);
 
     battleCPU(...playCPU(card));
 }
@@ -510,22 +508,22 @@ function dealCards(decks, cards) {
     }
 }
 
-function getDeckHTML(playerDeck) {
+function getDeckHTML(userDeck) {
     let deckHTML = "";
-    for (let card of playerDeck) {
+    for (let card of userDeck) {
         deckHTML += card;
     }
 
     return deckHTML;
 }
 
-let dealtDecks = [playerDeck, cpuDeck]
+let dealtDecks = [userDeck, cpuDeck]
 dealCards(dealtDecks, createDeck());
-playerDeck = dealtDecks[0];
+userDeck = dealtDecks[0];
 cpuDeck = dealtDecks[1];
 
 console.log("dealtDecks", dealtDecks);
-console.log("playerDeck", playerDeck);
+console.log("userDeck", userDeck);
 console.log("cpuDeck", cpuDeck);
 
 updateView();
