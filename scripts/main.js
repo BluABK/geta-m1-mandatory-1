@@ -395,8 +395,8 @@ function warCPU() {
     console.log("Spoils of War: Move the ones in the war piles.");
     // For each war Cards (both sides in tandem).
     for (let i = 0; i < playerWarPiles.length; i++) {
-        // For each card in war (both sides in tandem).
-        for (let j = 0; j < playerWarPiles[i].length; j++) {
+        // For each card in war (both sides in tandem). Decrementing backwards loop due to length changing as cards get moved out of the source pile.
+        for (let j = playerWarPiles[i].length -1; j > -1; j--) {
             moveCard(playerWarPiles[i].items[j], playerWarPiles[i], lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
             moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
         }
