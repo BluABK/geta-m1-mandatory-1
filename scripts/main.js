@@ -50,11 +50,11 @@ function updateView() {
                 Latest Battle Victor: ${latestBattleVictor}
             </div>
             ${VERICAL_SPACER}
-            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.firstElementChild)"' : ""} playersIndex="0">
+            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.firstElementChild)"' : ""}>
                 ${playerDeck.length > 0 ? getCardHTML(playerDeck.items[playerDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-spacer"></div>
-            <div id="player1-pile" class="card-slot pile-slot card-pile" playersIndex="0">
+            <div id="player1-pile" class="card-slot pile-slot card-pile">
                 ${playerPile.length > 0  ? getCardHTML(playerPile.items[playerPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-gap"></div>
@@ -62,11 +62,11 @@ function updateView() {
             <div class="card-gap-half"></div>
             <div class="card-spacer"></div>
             <div class="card-gap"></div>
-            <div id="player2-pile" class="card-slot card-pile unclickable" playersIndex="1">
+            <div id="player2-pile" class="card-slot card-pile unclickable">
                 ${cpuPile.length > 0  ? getCardHTML(cpuPile.items[cpuPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-spacer"></div>
-            <div id="player2-deck" class="card-slot deck-slot unclickable" playersIndex="1">
+            <div id="player2-deck" class="card-slot deck-slot unclickable">
                 ${cpuDeck.length > 0  ? getCardHTML(cpuDeck.items[cpuDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             ${getWarHTMLs()}
@@ -215,10 +215,6 @@ function createDeck(facingBack = CARD_FACING_BACK, owner = null) {
     }
     console.log("deck", deck.items);
     return deck;
-}
-
-function getCardOwnerIndex(card) {
-    return parseInt(card.parentElement.getAttribute("playersIndex"));
 }
 
 /**
@@ -414,6 +410,7 @@ function warCPU() {
             moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], userWonTheWar ? playerDeck : cpuDeck, false, 0).faceBack();
         }
     }
+
     // Clear all wars.
     playerWarPiles = [];
     cpuWarPiles = [];
@@ -480,12 +477,9 @@ function battleCPU(playerCard, cpuCard, moveCards = true) {
 }
 
 function clickedPlayerDeck(cardHTML) {
-    // console.log("clickedPlayerDeck(card)", cardHTML);
-    // let ownerIndex = getCardOwnerIndex(card); // FIXME: Should be replaced with Card.owner. // FIXME: For use with 2 human players, currently only computer is implemented.
-
     // Play a single round.
     let card = playerDeck.itemsMap.get(cardHTML.id);
-    // console.log("card", card);
+
     battleCPU(...playCPU(card));
 }
 
