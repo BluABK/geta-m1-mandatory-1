@@ -393,12 +393,12 @@ function warCPU() {
     
     // Move the ones in the war piles.
     console.log("Spoils of War: Move the ones in the war piles.");
-    // For each war (both sides in tandem).
+    // For each war Cards (both sides in tandem).
     for (let i = 0; i < playerWarPiles.length; i++) {
         // For each card in war (both sides in tandem).
         for (let j = 0; j < playerWarPiles[i].length; j++) {
-            moveCard(playerWarPiles[i].items[j], playerPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
-            moveCard(cpuWarPiles[i].items[j], cpuPile, lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(playerWarPiles[i].items[j], playerWarPiles[i], lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
+            moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
         }
     }
     // NB: Omitting updateView call here to make result linger on board.
