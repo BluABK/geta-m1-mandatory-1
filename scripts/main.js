@@ -106,20 +106,28 @@ function getWarCard(cards, cardIndex) {
 /**
  * 
  * @param {Cards} cards A Cards element that holds Card elements.
+ * @param {boolean} reverse Append card slots in reverse order.
  * @returns {String} HTML String
  */
-function getWarHTML(cards) {
+function getWarHTML(cards, reverse = false) {
     let warPile = "";
 
-    warPile += `${getWarCard(cards, 0)}`;
-    warPile += `${SLOT_SPACER}${getWarCard(cards, 1)}`;
-    warPile += `${SLOT_SPACER}${getWarCard(cards, 2)}`;
+    if (reverse) {
+        warPile += `${getWarCard(cards, 2)}`;
+        warPile += `${SLOT_SPACER}${getWarCard(cards, 1)}`;
+        warPile += `${SLOT_SPACER}${getWarCard(cards, 0)}`;
+    } else {
+        warPile += `${getWarCard(cards, 0)}`;
+        warPile += `${SLOT_SPACER}${getWarCard(cards, 1)}`;
+        warPile += `${SLOT_SPACER}${getWarCard(cards, 2)}`;
+    }
+
 
     return warPile;
 }
 
 function getWarHTMLs() {
-    if(playerWarPiles.length <= 0 || cpuWarPiles.length <= 0) return;
+    if(playerWarPiles.length <= 0 || cpuWarPiles.length <= 0) return "";
     if (playerWarPiles.length != cpuWarPiles.length ) {
             throw new Error(`War piles are of unequal length! ${playerWarPiles.length} != ${cpuWarPiles.length}`);
     }
@@ -129,10 +137,10 @@ function getWarHTMLs() {
     // Append wars to div, one war at a time.
     for (let i = 0; i < playerWarPiles.length; i++) {
         //         \n        Player side                          GAP        CPU Side
-        warsDiv += NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i]);
+        warsDiv += NEWLINE + getWarHTML(playerWarPiles[i]) + SLOT_GAP_HALF + getWarHTML(cpuWarPiles[i], true);
     }
 
-    console.log("warsDiv", warsDiv);
+    // console.log("warsDiv", warsDiv);
     return warsDiv;
 
 }
@@ -242,6 +250,7 @@ function getCardOwnerIndex(card) {
  * @returns {Card} Card that was moved.
  */
  function moveCard(card, source, destination, destinationIndex = 0) {
+    if (card == undefined) throw new Error("Attempted to move undefined card!");
     console.log("moveCard(card, destination, destinationIndex)", card, source, destination, destinationIndex);
     if (source.itemsMap.has(card.id) == false) throw new Error("Attempted to move a card from a source it isn't in.", card, source);
 
@@ -346,12 +355,10 @@ function warCPU() {
         if (i === 2) facingBack = false;
         
         // Player draws card from top of deck/stack, and push the returned Card to Player's war piles.
-        // playerWarPiles[currentWarCardsIndex].push(playCard(playerDeck.items[playerDeck.length - 1], playerDeck, playerWarPiles[currentWarCardsIndex], facingBack));
         let playerDrawnCard = playCard(playerDeck.items[playerDeck.length - 1], playerDeck, playerWarPiles[currentWarCardsIndex], facingBack);
         console.log(`War #${playerWarPiles.length}: Player drew [Card ${i+1}/3]: ${playerDrawnCard.value} ${playerDrawnCard.suit}`)
         
         // CPU draws card from top of deck/stack, and push the returned Card to CPU's war piles.
-        // cpuWarPiles[currentWarCardsIndex].push(playCard(cpuDeck.items[cpuDeck.length - 1], cpuDeck, cpuCurrentWarPile, facingBack));
         let cpuDrawnCard = playCard(cpuDeck.items[cpuDeck.length - 1], cpuDeck, cpuWarPiles[currentWarCardsIndex], facingBack);
         console.log(`War #${playerWarPiles.length}: CPU drew [Card ${i+1}/3]: ${cpuDrawnCard.value} ${cpuDrawnCard.suit}`)
     }
