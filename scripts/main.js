@@ -319,17 +319,13 @@ function determineBattleVictor(card1, card2) {
     return victorCards;
 }
 
-function finalWarWon() {
-    // Reset wars.
-    playerWarsPiles = [];
-    currentPlayerWarIndex = -1;
-}
-
 function declareGameWinner(userWon = false) {
     if (userWon) {
+        console.log("User won!");
         alert("You Won!");
     } else {
         alert("You lost!");
+        console.log("User lost!");
     }
 }
 
@@ -401,6 +397,10 @@ function warCPU() {
             moveCard(cpuWarPiles[i].items[j], cpuWarPiles[i], lastBattleVictor == 0 ? playerDeck : cpuDeck, false, 0).faceBack();
         }
     }
+    // Clear all wars.
+    playerWarPiles = [];
+    cpuWarPiles = [];
+
     // NB: Omitting updateView call here to make result linger on board.
 }
 
