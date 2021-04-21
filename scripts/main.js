@@ -43,30 +43,29 @@ function updateView() {
     // Draw the app view.
     document.getElementById("app").innerHTML = `
         <div class="board">
-            <div id="board-stats" class="board-stats-part">
-                ${allPlayersStatsHTML()}<br/>
-                <br/>
-                Battles fought: ${battleLog.length}.<br/>
-                Latest Battle Victor: ${latestBattleVictor}
-            </div>
-            ${VERICAL_SPACER}
-            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.firstElementChild)"' : ""}>
+            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.lastElementChild)"' : ""}>
+                ${playerDeck.length > 0 ? '<div class="deck-count-overlay">' + playerDeck.length + '</div>' : ""}
                 ${playerDeck.length > 0 ? getCardHTML(playerDeck.items[playerDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-spacer"></div>
             <div id="player1-pile" class="card-slot pile-slot card-pile">
                 ${playerPile.length > 0  ? getCardHTML(playerPile.items[playerPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
-            <div class="card-gap"></div>
-            <div class="card-spacer"></div>
-            <div class="card-gap-half"></div>
-            <div class="card-spacer"></div>
-            <div class="card-gap"></div>
+            <div class="board-top-row-spacer">
+                <div class="board-stats-part">
+                    Latest Battle Victor:<br/>
+                    ${latestBattleVictor}<br/>
+                    <br/>
+                    Battles fought:<br/>
+                    ${battleLog.length}<br/>
+                </div>
+            </div>
             <div id="player2-pile" class="card-slot card-pile unclickable">
                 ${cpuPile.length > 0  ? getCardHTML(cpuPile.items[cpuPile.length - 1], false) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             <div class="card-spacer"></div>
             <div id="player2-deck" class="card-slot deck-slot unclickable">
+                ${cpuDeck.length > 0 ? '<div class="deck-count-overlay">' + cpuDeck.length + '</div>' : ""}
                 ${cpuDeck.length > 0  ? getCardHTML(cpuDeck.items[cpuDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
             ${getWarHTMLs()}
@@ -132,24 +131,6 @@ function getWarHTMLs() {
     // console.log("warsDiv", warsDiv);
     return warsDiv;
 
-}
-
-function playerDeckStatsHTML(deck) {
-    return deck.length;
-}
-
-function playerPileStatsHTML(pile) {
-    return pile.length;
-}
-
-function allPlayersStatsHTML() {
-    let myDiv = `
-        Player:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Deck: ${playerDeckStatsHTML(playerDeck)}, Pile: ${playerPileStatsHTML(playerPile)}.
-        <br/>
-        Computer: Deck: ${playerDeckStatsHTML(cpuDeck)}, Pile: ${playerPileStatsHTML(playerPile)}.
-    `;
-
-    return myDiv;
 }
 
 /**

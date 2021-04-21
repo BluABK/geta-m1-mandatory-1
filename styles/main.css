@@ -1,12 +1,12 @@
 body {
     margin: 0;
-    /* padding: 0; */
     background-color: rgb(67, 155, 79);
 }
 
 .app {
     width: 100vw;
     height: 100vh;
+    /* overflow: hidden; */
 }
 
 .newline {
@@ -58,13 +58,32 @@ body {
     border-radius: 10%;
 }
 
-
 .empty-card-slot {
     border: 1px solid black;
 }
 
+.board-top-row-spacer {
+    float: left;
+    width: 415px;
+    max-width: 415px;
+    height: 200px;
+    max-height: 200px;
+}
+
 .board-stats-part {
-    padding: 15px 0px 0px 20px;
+    width: 415px;
+    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
+
+    /* Center the text vertically by setting line-height equal height. */
+    /* line-height: 200px; */
+    text-align: center;
+    font-size: 1.75em;
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+    
+    color: rgb(0, 0, 0);
 }
 
 .vertical-spacer {
@@ -76,12 +95,12 @@ body {
 }
 
 .board {
+    position: absolute;
     width: 98.5vw;
     height: 96.5vh;
-    /* border: 1px solid black; */
     display: block;
-    padding: 0px 00px 40px 15px;
-    margin-left: 0;
+    padding: 15px 00px 40px 15px;
+    /* text-align: center; */
 }
 
 .draw-deck-container {
@@ -155,14 +174,12 @@ body {
 }
 
 .card {
-    /* position: absolute; */
     width: 150px;
     max-width: 150px;
     height: 200px;
     max-height: 200px;
     border: 1px solid black;
     border-radius: 10%;
-    /* padding: 5px 5px 5px 5px; */
     overflow: hidden;
 }
 
@@ -181,7 +198,6 @@ body {
 
 .card-design-back {
     position: relative;
-    /* background-color: teal; */
     background-image: url("../img/deck.webp");
     background-size: cover;
     -webkit-background-size: cover;
@@ -220,6 +236,24 @@ body {
     font-size: 3ex;
     border-radius: 10%;
 }
+
 .card-center-symbol {
     font-size: 16ex;
+}
+
+.deck-count-overlay {
+    position: absolute;
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
+    /* Center the text vertically by setting line-height equal height. */
+    line-height: 200px;
+    font-size: 7em;
+    font-weight: bold;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.400);
+    font-family: Helvetica, sans-serif;
 }
