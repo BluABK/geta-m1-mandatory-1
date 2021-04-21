@@ -1,5 +1,6 @@
 // Model:
 let gameOver = false;
+let gameVictor = null;
 const CARD_FACING_BACK = true;
 // As the value of Ace depends upon the card game, define it as a constant that can easily be changed later.
 const ACE_FACE_CARD_VALUE = 14;
@@ -43,7 +44,7 @@ function updateView() {
     // Draw the app view.
     document.getElementById("app").innerHTML = `
         <div class="board">
-            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 ? "clickable" : ""}" ${playerDeck.length > 0 ? 'onClick="clickedPlayerDeck(this.lastElementChild)"' : ""}>
+            <div id="player1-deck" class="card-slot deck-slot ${playerDeck.length > 0 && gameOver === false ? "clickable" : "unclickable"}" ${playerDeck.length > 0 && gameOver === false ? 'onClick="clickedPlayerDeck(this.lastElementChild)"' : ""}>
                 ${playerDeck.length > 0 ? '<div class="deck-count-overlay">' + playerDeck.length + '</div>' : ""}
                 ${playerDeck.length > 0 ? getCardHTML(playerDeck.items[playerDeck.length - 1]) : `<div class="card-slot empty-card-slot"></div>`}
             </div>
@@ -57,7 +58,8 @@ function updateView() {
                     ${latestBattleVictor}<br/>
                     <br/>
                     Battles fought:<br/>
-                    ${battleLog.length}<br/>
+                    ${battleLog.length}
+                    ${gameOver ? "<br/><br/><br/>Game Over: " + (gameVictor !== null ? "Won by " + gameVictor : "It was a draw!")  : ""}
                 </div>
             </div>
             <div id="player2-pile" class="card-slot card-pile unclickable">
@@ -294,13 +296,19 @@ function determineBattleVictor(card1, card2) {
 function declareGameWinner(userWon = false) {
     if (userWon === null) {
         console.log("It is a draw! :o");
+        gameVictor = null;
         alert("It is a draw! :o");
     } else if (userWon === true) {
         console.log("User won!");
+        gameVictor = "User";
         alert("You Won!");
-    } else {
-        alert("You lost!");
+    } else if (userWon === false) {
         console.log("User lost!");
+        gameVictor = "Computer";
+        alert("You lost!");
+    } else {
+        console.error(`declareGameWinner(${userWon}) arg was neither null, true or false!!`)
+        throw new Error(`declareGameWinner(${userWon}) arg was neither null, true or false!!`);
     }
 
     gameOver = true;
@@ -310,13 +318,13 @@ function declareGameWinner(userWon = false) {
 
 function checkIfGameOver() {
     // Make sure the war piles are of equal length.
-    if (playerDeck.length == 0 || cpuDeck.length == 0) {
-        if (playerDeck.length == cpuDeck.length) {
+    if (playerDeck.length === 0 || cpuDeck.length === 0) {
+        if (playerDeck.length === cpuDeck.length) {
             // If not equal, the player with the least amount of cards left has lost.
             declareGameWinner(null);
         } else {
             // If not equal, the player with the least amount of cards left has lost.
-            declareGameWinner(playerWarPiles.length > cpuWarPiles.length);
+            declareGameWinner(playerDeck.length > cpuDeck.length);
         }
     }
 }
@@ -458,6 +466,9 @@ function battleCPU(playerCard, cpuCard, moveCards = true) {
 }
 
 function clickedPlayerDeck(cardHTML) {
+    checkIfGameOver();
+    if (gameOver) return;
+
     // Play a single round.
     let card = playerDeck.itemsMap.get(cardHTML.id);
 
